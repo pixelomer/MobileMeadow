@@ -129,11 +129,11 @@ static NSTimer *oneMinuteTimer = nil;
 	NSLog(@"One minute passed. Can receive mail: %d", canReceiveMail);
 	if (!canReceiveMail) return;
 	canReceiveMail = NO;
-	#define return do { canReceiveMail = YES; return; } while (0)
+#define return do { canReceiveMail = YES; return; } while (0)
 	NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
 	NSDate *date = [NSDate date];
 	NSCalendarUnit flags = (NSCalendarUnitMinute | NSCalendarUnitHour);
-	NSDateComponents *__unused components = [calendar components:flags fromDate:date];
+	NSDateComponents *__debug_unused components = [calendar components:flags fromDate:date];
 	NSLog(@"Checking time.");
 #if DEBUG
 	if (!components) return;
@@ -153,6 +153,7 @@ static NSTimer *oneMinuteTimer = nil;
 	dispatch_async(dispatch_get_main_queue(), ^{
 		[self animateMailArrival:letterString];
 	});
+#undef return
 }
 
 @end

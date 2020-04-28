@@ -4,6 +4,11 @@
 #define max(x,y) ((x>y)?x:y)
 #define DEG_TO_RAD(degress) ((degress) * M_PI / 180.0)
 #define NSLog(args...) NSLog(@"[MobileMeadow] "args)
+#if DEBUG
+#define __debug_unused __unused
+#else
+#define __debug_unused
+#endif
 
 @interface NSUserDefaults(Private)
 - (id)objectForKey:(NSString *)key inDomain:(NSString *)reverseDomain;
