@@ -1,5 +1,6 @@
 #import "MMMailBoxView.h"
 #import "MMAssets.h"
+#import "MMGroundContainerView.h"
 
 @implementation MMMailBoxView
 
@@ -30,11 +31,20 @@ static BOOL _isFull;
 			name:@"MMMailBoxView/StateChange"
 			object:nil
 		];
+		UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc]
+			initWithTarget:self
+			action:@selector(handleTap:)
+		];
+		[self addGestureRecognizer:tapRecognizer];
 		_birdView = [[MMBirdView alloc] initWithBirdName:@"deliverybird"];
 		_birdView.horizontallyMirrored = YES;
 		[_birdView stopAnimating];
 		_birdView.translatesAutoresizingMaskIntoConstraints = NO;
 		[self addSubview:_birdView];
+		_mailAlertImageView = [UIImageView new];
+		_mailAlertImageView.translatesAutoresizingMaskIntoConstraints = NO;
+		_mailAlertImageView.image = [MMAssets imageNamed:@"mail_icon"];
+		[self addSubview:_mailAlertImageView];
 		_imageView = [UIImageView new];
 		_imageView.translatesAutoresizingMaskIntoConstraints = NO;
 		[self addSubview:_imageView];
@@ -52,8 +62,35 @@ static BOOL _isFull;
 				constraintWithItem:_birdView
 				attribute:NSLayoutAttributeBottom
 				relatedBy:NSLayoutRelationEqual
+				toItem:_imageView
+				attribute:NSLayoutAttributeTop
+				multiplier:1.0
+				constant:0.0
+			],
+			[NSLayoutConstraint
+				constraintWithItem:_mailAlertImageView
+				attribute:NSLayoutAttributeBottom
+				relatedBy:NSLayoutRelationEqual
+				toItem:_birdView
+				attribute:NSLayoutAttributeTop
+				multiplier:1.0
+				constant:6.0
+			],
+			[NSLayoutConstraint
+				constraintWithItem:_mailAlertImageView
+				attribute:NSLayoutAttributeTop
+				relatedBy:NSLayoutRelationEqual
 				toItem:self
 				attribute:NSLayoutAttributeTop
+				multiplier:1.0
+				constant:0.0
+			],
+			[NSLayoutConstraint
+				constraintWithItem:_mailAlertImageView
+				attribute:NSLayoutAttributeCenterX
+				relatedBy:NSLayoutRelationEqual
+				toItem:self
+				attribute:NSLayoutAttributeCenterX
 				multiplier:1.0
 				constant:0.0
 			],
@@ -74,15 +111,6 @@ static BOOL _isFull;
 				attribute:NSLayoutAttributeNotAnAttribute
 				multiplier:0.0
 				constant:27.0
-			],
-			[NSLayoutConstraint
-				constraintWithItem:_imageView
-				attribute:NSLayoutAttributeTop
-				relatedBy:NSLayoutRelationEqual
-				toItem:self
-				attribute:NSLayoutAttributeTop
-				multiplier:1.0
-				constant:0.0
 			],
 			[NSLayoutConstraint
 				constraintWithItem:_imageView
@@ -118,6 +146,12 @@ static BOOL _isFull;
 	return self;
 }
 
+- (void)handleTap:(id)sender {
+	if (_isFull) {
+		[[MMGroundContainerView springboardSingleton] animateDeliveryBirdLeavingWithCompletion:nil];
+	}
+}
+
 - (void)dealloc {
 	[NSNotificationCenter.defaultCenter removeObserver:self];
 }
@@ -125,6 +159,7 @@ static BOOL _isFull;
 - (void)setIsFull:(BOOL)isFull {
 	_imageView.image = [MMAssets imageNamed:(isFull ? @"mailbox_full" : @"mailbox_empty")];
 	_birdView.hidden = !isFull;
+	_mailAlertImageView.hidden = !isFull;
 }
 
 @end

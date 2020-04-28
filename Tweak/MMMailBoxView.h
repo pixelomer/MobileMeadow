@@ -4,6 +4,7 @@
 @interface MMMailBoxView : UIView {
 	UIImageView *_imageView;
 	MMBirdView *_birdView;
+	UIImageView *_mailAlertImageView;
 }
 + (BOOL)isFull;
 + (void)setIsFull:(BOOL)isFull;

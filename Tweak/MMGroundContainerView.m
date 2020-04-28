@@ -47,13 +47,78 @@ static MMGroundContainerView *_springboardSingleton;
 					constant:0.0
 				]
 			]];
-			[self animateDeliveryBirdLanding];
 		}
 	}
 	return self;
 }
 
-- (void)animateDeliveryBirdLanding {
+- (void)animateDeliveryBirdLeavingWithCompletion:(void(^)(BOOL finished))completion {
+	[MMMailBoxView setIsFull:NO];
+	MMBirdView *birdView = [[MMBirdView alloc] initWithBirdName:@"deliverybird"];
+	birdView.translatesAutoresizingMaskIntoConstraints = NO;
+	birdView.horizontallyMirrored = NO;
+	[self addSubview:birdView];
+	NSArray *targetConstraints = @[
+		[NSLayoutConstraint
+			constraintWithItem:birdView
+			attribute:NSLayoutAttributeLeft
+			relatedBy:NSLayoutRelationEqual
+			toItem:self
+			attribute:NSLayoutAttributeRight
+			multiplier:1.0
+			constant:0.0
+		],
+		[NSLayoutConstraint
+			constraintWithItem:birdView
+			attribute:NSLayoutAttributeBottom
+			relatedBy:NSLayoutRelationEqual
+			toItem:self
+			attribute:NSLayoutAttributeBottom
+			multiplier:1.0
+			constant:-125.0
+		]
+	];
+	NSArray *initialConstraints = @[
+		[NSLayoutConstraint
+			constraintWithItem:birdView
+			attribute:NSLayoutAttributeBottom
+			relatedBy:NSLayoutRelationEqual
+			toItem:_mailBoxView
+			attribute:NSLayoutAttributeBottom
+			multiplier:1.0
+			constant:-36.0
+		],
+		[NSLayoutConstraint
+			constraintWithItem:birdView
+			attribute:NSLayoutAttributeCenterX
+			relatedBy:NSLayoutRelationEqual
+			toItem:_mailBoxView
+			attribute:NSLayoutAttributeCenterX
+			multiplier:1.0
+			constant:0.0
+		]
+	];
+	[self addConstraints:initialConstraints];
+	[self setNeedsLayout];
+	[self layoutIfNeeded];
+	[UIView
+		animateWithDuration:2.0
+		delay:0.0
+		options:UIViewAnimationOptionCurveLinear
+		animations:^{
+			[self removeConstraints:initialConstraints];
+			[self addConstraints:targetConstraints];
+			[self setNeedsLayout];
+			[self layoutIfNeeded];
+		}
+		completion:^(BOOL finished){
+			[birdView removeFromSuperview];
+			if (completion) completion(finished);
+		}
+	];
+}
+
+- (void)animateDeliveryBirdLandingWithCompletion:(void(^)(BOOL finished))completion {
 	MMBirdView *birdView = [[MMBirdView alloc] initWithBirdName:@"deliverybird"];
 	birdView.translatesAutoresizingMaskIntoConstraints = NO;
 	birdView.horizontallyMirrored = YES;
@@ -84,9 +149,9 @@ static MMGroundContainerView *_springboardSingleton;
 			attribute:NSLayoutAttributeBottom
 			relatedBy:NSLayoutRelationEqual
 			toItem:_mailBoxView
-			attribute:NSLayoutAttributeTop
+			attribute:NSLayoutAttributeBottom
 			multiplier:1.0
-			constant:0.0
+			constant:-36.0
 		],
 		[NSLayoutConstraint
 			constraintWithItem:birdView
@@ -114,6 +179,7 @@ static MMGroundContainerView *_springboardSingleton;
 		completion:^(BOOL finished){
 			[MMMailBoxView setIsFull:YES];
 			[birdView removeFromSuperview];
+			if (completion) completion(finished);
 		}
 	];
 }

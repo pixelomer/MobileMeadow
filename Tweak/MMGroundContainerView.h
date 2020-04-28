@@ -10,6 +10,8 @@
 	CGFloat _lastUpdateX;
 	MMBirdView *_birdView;
 }
-@property (nonatomic, strong) MMMailBoxView *mailBoxView;
+@property (nonatomic, strong, readonly) MMMailBoxView *mailBoxView;
 + (MMGroundContainerView *)springboardSingleton;
+- (void)animateDeliveryBirdLandingWithCompletion:(void(^)(BOOL finished))completion;
+- (void)animateDeliveryBirdLeavingWithCompletion:(void(^)(BOOL finished))completion;
 @end

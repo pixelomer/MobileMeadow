@@ -1,5 +1,7 @@
 #import <UIKit/UIKit.h>
 #import "MobileMeadow.h"
+#import "MMMailManager.h"
+#import "MMGroundContainerView.h"
 
 static MMGroundContainerView *_dockGround;
 
@@ -23,6 +25,9 @@ static MMGroundContainerView *_dockGround;
 
 @interface UIView(Private)
 - (UIViewController *)_viewControllerForAncestor;
+@end
+
+@interface SBDockView : UIView
 @end
 
 @interface _WGWidgetListScrollView : UIScrollView
@@ -50,6 +55,25 @@ static MMGroundContainerView *_dockGround;
 	self.meadow_airLayer = [MMAirLayerWindow new];
 	self.meadow_airLayer.windowLevel = CGFLOAT_MAX / 2.0;
 	[self.meadow_airLayer makeKeyAndVisible];
+	[MMMailManager startMailThread];
+}
+
+%end
+
+// iOS 7.0 -> Present
+%hook SBDockView
+
+- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event {
+	if (%orig) return YES;
+	CGPoint converted = [self convertPoint:point toView:_dockGround.mailBoxView];
+	return [_dockGround.mailBoxView pointInside:converted withEvent:event];
+}
+
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+	UIView *view;
+	if ((view = %orig)) return view;
+	CGPoint converted = [self convertPoint:point toView:_dockGround.mailBoxView];
+	return [_dockGround.mailBoxView hitTest:converted withEvent:event];
 }
 
 %end
