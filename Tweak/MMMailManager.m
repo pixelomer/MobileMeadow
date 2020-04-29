@@ -15,7 +15,7 @@ static NSTimer *oneMinuteTimer = nil;
 + (void)load {
 	if ([MMMailManager class] == self) {
 		hours = @[
-			@(3), @(7), @(10), @(13),
+			@(3), @(7), @(10), @(13)
 			@(17), @(20), @(22)
 		];
 		canReceiveMail = YES;
@@ -62,6 +62,12 @@ static NSTimer *oneMinuteTimer = nil;
 }
 
 + (void)mailThread:(id)unused {
+	if (![NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.springboard"]) {
+		[NSException
+			raise:NSInvalidArgumentException
+			format:@"New mails can only be fetched in SpringBoard."
+		];
+	}
 	oneMinuteTimer = [NSTimer
 		scheduledTimerWithTimeInterval:60.0
 		target:self
@@ -133,9 +139,9 @@ static NSTimer *oneMinuteTimer = nil;
 	NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
 	NSDate *date = [NSDate date];
 	NSCalendarUnit flags = (NSCalendarUnitMinute | NSCalendarUnitHour);
-	NSDateComponents *__debug_unused components = [calendar components:flags fromDate:date];
-	NSLog(@"Checking time.");
-#if DEBUG
+	NSDateComponents *components = [calendar components:flags fromDate:date];
+	NSLog(@"It's %02ld:%02ld. Checking if mail should be delivered...", (long)components.hour, (long)components.minute);
+#if !DEBUG
 	if (!components) return;
 	if (components.minute) return;
 	for (NSNumber *hour in hours) {
