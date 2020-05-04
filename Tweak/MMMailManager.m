@@ -1,21 +1,20 @@
 #import "MMMailManager.h"
 #import "MMAirLayerWindow.h"
 #import "MMGroundContainerView.h"
+#import <Headers/SpringBoard.h>
 
 // GET request: Gets a random letter
-// POST request: Send a letter (has to be approved by a moderator)
+// POST request: Sends a letter (has to be approved by a moderator)
 
 @implementation MMMailManager
 
 static NSArray *hours = nil;
 static BOOL canReceiveMail = NO;
-static NSTimer *canReceiveMailTimer = nil;
-static NSTimer *oneMinuteTimer = nil;
 
 + (void)load {
 	if ([MMMailManager class] == self) {
 		hours = @[
-			@(3), @(7), @(10), @(13)
+			@(3), @(7), @(10), @(13),
 			@(17), @(20), @(22)
 		];
 		canReceiveMail = YES;
@@ -29,54 +28,40 @@ static NSTimer *oneMinuteTimer = nil;
 }
 
 + (void)startMailThread {
-	if (!oneMinuteTimer) {
-		[NSThread
-			detachNewThreadSelector:@selector(mailThread:)
-			toTarget:self
-			withObject:nil
-		];
-	}
-}
-
-+ (void)canNowReceiveMail:(NSTimer *)timer {
-	NSLog(@"2 minutes passed. Can now receive mail.");
-	[canReceiveMailTimer invalidate];
-	if (timer != canReceiveMailTimer) [timer invalidate];
-	canReceiveMailTimer = nil;
-	canReceiveMail = YES;
+	[NSThread
+		detachNewThreadSelector:@selector(mailThread:)
+		toTarget:self
+		withObject:nil
+	];
 }
 
 + (void)handleMailBoxStateChange:(NSNotification *)notif {
 	NSNumber *isFull = notif.userInfo[@"isFull"];
 	if (![isFull boolValue] && !canReceiveMail) {
-		NSLog(@"Mailbox was checked. Will set canReceiveMail to YES in 2 minutes.");
-		[canReceiveMailTimer invalidate];
-		canReceiveMailTimer = [NSTimer
-			scheduledTimerWithTimeInterval:120.0
-			target:self
-			selector:@selector(canNowReceiveMail:)
-			userInfo:nil
-			repeats:NO
-		];
+		NSLog(@"Mailbox was checked. Will set canReceiveMail to YES.");
+		canReceiveMail = YES;
 	}
 }
 
 + (void)mailThread:(id)unused {
+	NSLog(@"+mailThread: got called.");
 	if (![NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.springboard"]) {
 		[NSException
 			raise:NSInvalidArgumentException
 			format:@"New mails can only be fetched in SpringBoard."
 		];
 	}
-	oneMinuteTimer = [NSTimer
-		scheduledTimerWithTimeInterval:60.0
-		target:self
-		selector:@selector(oneMinuteDidPass:)
-		userInfo:nil
-		repeats:YES
-	];
+	[NSThread sleepForTimeInterval:60.0];
 	while (1) {
-		[[NSRunLoop currentRunLoop] run];
+		NSDate *currentDate = [NSDate date];
+		NSDate *dateToSleepUntil = [currentDate dateByAddingTimeInterval:60.0];
+		[self oneMinuteDidPass];
+		currentDate = [NSDate date];
+		NSTimeInterval secondsToSleep = dateToSleepUntil.timeIntervalSince1970 - currentDate.timeIntervalSince1970;
+		NSLog(@"Seconds to sleep: %f", secondsToSleep);
+		if ((secondsToSleep < 60.0) && (secondsToSleep > 0.0)) {
+			[NSThread sleepUntilDate:dateToSleepUntil];
+		}
 	}
 }
 
@@ -131,7 +116,7 @@ static NSTimer *oneMinuteTimer = nil;
 	];
 }
 
-+ (void)oneMinuteDidPass:(NSTimer *)timer {
++ (void)oneMinuteDidPass {
 	NSLog(@"One minute passed. Can receive mail: %d", canReceiveMail);
 	if (!canReceiveMail) return;
 	canReceiveMail = NO;
@@ -141,7 +126,7 @@ static NSTimer *oneMinuteTimer = nil;
 	NSCalendarUnit flags = (NSCalendarUnitMinute | NSCalendarUnitHour);
 	NSDateComponents *components = [calendar components:flags fromDate:date];
 	NSLog(@"It's %02ld:%02ld. Checking if mail should be delivered...", (long)components.hour, (long)components.minute);
-#if !DEBUG
+//#if !DEBUG
 	if (!components) return;
 	if (components.minute) return;
 	for (NSNumber *hour in hours) {
@@ -151,7 +136,7 @@ static NSTimer *oneMinuteTimer = nil;
 		}
 	}
 	if (calendar) return;
-#endif
+//#endif
 	NSLog(@"It's time to deliver mail!");
 	NSString *letterString = [self fetchLetter];
 	NSLog(@"Letter: %@", letterString);
