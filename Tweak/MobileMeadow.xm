@@ -1,6 +1,7 @@
 #import <UIKit/UIKit.h>
 #import "MobileMeadow.h"
 #import "MMMailManager.h"
+#import "MMUserDefaultsServer.h"
 #import "MMGroundContainerView.h"
 
 static MMGroundContainerView *_dockGround;
@@ -65,6 +66,7 @@ static MMGroundContainerView *_dockGround;
 
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event {
 	if (%orig) return YES;
+	if (!_dockGround.mailBoxView.userInteractionEnabled) return NO;
 	CGPoint converted = [self convertPoint:point toView:_dockGround.mailBoxView];
 	return [_dockGround.mailBoxView pointInside:converted withEvent:event];
 }
@@ -157,6 +159,7 @@ static MMGroundContainerView *_dockGround;
 
 %ctor {
 	if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.springboard"]) {
+		[MMUserDefaultsServer runServerInMainThread];
 		%init(SpringBoard);
 	}
 	else {

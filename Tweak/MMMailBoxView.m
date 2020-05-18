@@ -1,18 +1,31 @@
 #import "MMMailBoxView.h"
 #import "MMAssets.h"
 #import "MMGroundContainerView.h"
+#import <Headers/SpringBoard.h>
 
 @implementation MMMailBoxView
 
 static BOOL _isFull;
 
++ (void)load {
+	if (self == [MMMailBoxView class]) {
+		NSNumber *unread = [[NSUserDefaults standardUserDefaults]
+			objectForKey:@"unread"
+			inDomain:@"com.pixelomer.meadowmail"
+		];
+		_isFull = [unread boolValue];
+	}
+}
+
 + (void)setIsFull:(BOOL)isFull {
-	_isFull = isFull;
-	[NSNotificationCenter.defaultCenter
-		postNotificationName:@"MMMailBoxView/StateChange"
-		object:nil
-		userInfo:@{ @"isFull" : @(isFull) }
-	];
+	@synchronized (self) {
+		_isFull = isFull;
+		[NSNotificationCenter.defaultCenter
+			postNotificationName:@"MMMailBoxView/StateChange"
+			object:nil
+			userInfo:@{ @"isFull" : @(isFull) }
+		];
+	}
 }
 
 + (BOOL)isFull {
@@ -148,7 +161,7 @@ static BOOL _isFull;
 
 - (void)handleTap:(id)sender {
 	if (_isFull) {
-		[[MMGroundContainerView springboardSingleton] animateDeliveryBirdLeavingWithCompletion:nil];
+		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"meadowmail://inbox"]];
 	}
 }
 
@@ -160,6 +173,7 @@ static BOOL _isFull;
 	_imageView.image = [MMAssets imageNamed:(isFull ? @"mailbox_full" : @"mailbox_empty")];
 	_birdView.hidden = !isFull;
 	_mailAlertImageView.hidden = !isFull;
+	self.userInteractionEnabled = isFull;
 }
 
 @end
