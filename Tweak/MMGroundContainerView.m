@@ -265,8 +265,8 @@ static MMGroundContainerView *_springboardSingleton;
 }
 
 - (void)layoutSubviews {
-	[super layoutSubviews];
 	[self updatePlants];
+	[super layoutSubviews];
 }
 
 - (void)didMoveToSuperview {

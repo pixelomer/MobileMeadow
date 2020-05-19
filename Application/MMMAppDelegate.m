@@ -20,7 +20,20 @@ static NSArray *_URLPaths;
 	didFinishLaunchingWithOptions:(NSDictionary<UIApplicationLaunchOptionsKey, id> *)options
 {
 	_window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-	_rootViewController = [[UINavigationController alloc] initWithRootViewController:[MMMRootViewController new]];
+	_rootViewController = [[MMMNavigationController alloc] initWithRootViewController:[MMMRootViewController new]];
+	_rootViewController.sharedToolbarItems = @[
+		[[UIBarButtonItem alloc]
+			initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
+			target:nil
+			action:nil
+		],
+		[[UIBarButtonItem alloc]
+			initWithBarButtonSystemItem:UIBarButtonSystemItemCompose
+			target:nil
+			action:nil
+		]
+	];
+	_rootViewController.toolbarHidden = NO;
 	_rootViewController.topViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
 	_rootViewController.navigationBar.prefersLargeTitles = NO;
 	_window.rootViewController = _rootViewController;
