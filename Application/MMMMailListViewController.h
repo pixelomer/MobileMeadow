@@ -2,6 +2,7 @@
 
 @interface MMMMailListViewController : UITableViewController<UITableViewDelegate, UITableViewDataSource> {
 	NSArray<NSDictionary<NSString *, id> *> *_mails;
+	NSUInteger _mailsLength;
 	BOOL _unread;
 }
 @property (nonatomic, copy, readonly) NSDictionary<NSString *, id> *filter; 

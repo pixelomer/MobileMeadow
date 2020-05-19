@@ -1,26 +1,7 @@
 #import "MMMMailViewController.h"
-#import <CoreText/CoreText.h>
+#import "UIFont+MeadowFont.h"
 
 @implementation MMMMailViewController
-
-static UIFont *_font;
-
-+ (void)initialize {
-	if (self == [MMMMailViewController class]) {
-		CGDataProviderRef fontDataRef = CGDataProviderCreateWithFilename(
-			[NSBundle.mainBundle
-				pathForResource:@"OpenDyslexic3-Regular"
-				ofType:@"ttf"
-			].UTF8String
-		);
-		CGFontRef fontRef = CGFontCreateWithDataProvider(fontDataRef);
-		CFRelease(fontDataRef);
-		CTFontRef graphicsFontRef = CTFontCreateWithGraphicsFont(fontRef, 15.5, NULL, NULL);
-		CFRelease(fontRef);
-		_font = [(__bridge UIFont *)graphicsFontRef copy];
-		CFRelease(graphicsFontRef);
-	}
-}
 
 - (void)reloadData {
 	[MMUserDefaults acquireLockWithCompletion:^{
@@ -91,7 +72,7 @@ static UIFont *_font;
 		]
 	]];
 	_letterTextLabel = [UILabel new];
-	_letterTextLabel.font = _font;
+	_letterTextLabel.font = [UIFont meadow_mailFont];
 	self.edgesForExtendedLayout = UIRectEdgeAll;
 	_letterTextLabel.textColor = [UIColor blackColor];
 	_letterTextLabel.numberOfLines = 0;

@@ -28,6 +28,7 @@
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
+	self.navigationItem.rightBarButtonItem = self.editButtonItem;
 	[self reloadData];
 }
 
@@ -84,6 +85,7 @@
 		[MMUserDefaults objectForKey:@"unread" completion:^(NSNumber *unread){
 			if (self.showsUnreadTint) _unread = unread.boolValue;
 			[MMUserDefaults objectForKey:@"mails" completion:^(NSArray *mails){
+				_mailsLength = mails.count;
 				NSMutableArray *filteredMails;
 				if (!_filter.count) filteredMails = mails.mutableCopy;
 				else {
@@ -127,6 +129,35 @@
 	NSUInteger mailIndex = [_mails[indexPath.row][@"index"] unsignedIntegerValue];
 	MMMMailViewController *vc = [[MMMMailViewController alloc] initWithMailIndex:mailIndex];
 	[self.navigationController pushViewController:vc animated:YES];
+}
+
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+	return (!indexPath.row && _unread) ? NO : YES;
+}
+
+- (void)tableView:(UITableView *)tableView
+	commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
+	forRowAtIndexPath:(NSIndexPath *)indexPath
+{
+	const NSUInteger mailsLength = _mailsLength;
+	NSArray *mailsOnMethodInvoke = _mails;
+	[MMUserDefaults acquireLockWithCompletion:^{
+		if (editingStyle != UITableViewCellEditingStyleDelete) {
+			[MMUserDefaults releaseLock];
+			return;
+		}
+		[MMUserDefaults objectForKey:@"mails" completion:^(NSArray *mails){
+			if ((mails.count != mailsLength) || (_mails != mailsOnMethodInvoke)) {
+				[MMUserDefaults releaseLock];
+				return;
+			}
+			NSMutableArray *finalMails = [mails mutableCopy];
+			[finalMails removeObjectAtIndex:[mailsOnMethodInvoke[indexPath.row][@"index"] unsignedIntegerValue]];
+			[MMUserDefaults setObject:finalMails.copy forKey:@"mails" completion:^{
+				[MMUserDefaults releaseLock];
+			}];
+		}];
+	}];
 }
 
 @end
