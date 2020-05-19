@@ -39,6 +39,8 @@ static UIFont *_font;
 			_date = dict[@"date"];
 			self.title = dict[@"title"];
 			_letterTextLabel.text = dict[@"content"];
+			[_scrollView setNeedsLayout];
+			[_scrollView layoutIfNeeded];
 			[MMUserDefaults releaseLock];
 		}];
 	}];
@@ -46,61 +48,65 @@ static UIFont *_font;
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
-	self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"mail_background_tile"]];
-	_letterTextLabel = [UILabel new];
-	_letterTextLabel.font = _font;
-	self.edgesForExtendedLayout = UIRectEdgeAll;
-	_letterTextLabel.textColor = [UIColor blackColor];
-	_letterTextLabel.numberOfLines = 0;
-	_letterTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
-	[self.view addSubview:_letterTextLabel];
+	_scrollView = [MMMMailScrollView new];
+	self.view.backgroundColor = _scrollView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"mail_background_tile"]];
+	_scrollView.translatesAutoresizingMaskIntoConstraints = NO;
+	[self.view addSubview:_scrollView];
 	[self.view addConstraints:@[
 		[NSLayoutConstraint
-			constraintWithItem:_letterTextLabel
-			attribute:NSLayoutAttributeBottom
-			relatedBy:NSLayoutRelationLessThanOrEqual
-			toItem:self.bottomLayoutGuide
-			attribute:NSLayoutAttributeTop
-			multiplier:1.0
-			constant:-20.0
-		],
-		[NSLayoutConstraint
-			constraintWithItem:_letterTextLabel
-			attribute:NSLayoutAttributeHeight
-			relatedBy:NSLayoutRelationGreaterThanOrEqual
-			toItem:nil
-			attribute:NSLayoutAttributeNotAnAttribute
-			multiplier:0.0
-			constant:0.0
-		],
-		[NSLayoutConstraint
-			constraintWithItem:_letterTextLabel
+			constraintWithItem:_scrollView
 			attribute:NSLayoutAttributeTop
 			relatedBy:NSLayoutRelationEqual
 			toItem:self.topLayoutGuide
 			attribute:NSLayoutAttributeBottom
 			multiplier:1.0
-			constant:20.0
+			constant:0.0
 		],
 		[NSLayoutConstraint
-			constraintWithItem:_letterTextLabel
+			constraintWithItem:_scrollView
+			attribute:NSLayoutAttributeBottom
+			relatedBy:NSLayoutRelationEqual
+			toItem:self.bottomLayoutGuide
+			attribute:NSLayoutAttributeTop
+			multiplier:1.0
+			constant:0.0
+		],
+		[NSLayoutConstraint
+			constraintWithItem:_scrollView
 			attribute:NSLayoutAttributeLeft
 			relatedBy:NSLayoutRelationEqual
 			toItem:self.view
 			attribute:NSLayoutAttributeLeft
 			multiplier:1.0
-			constant:20.0
+			constant:0.0
 		],
 		[NSLayoutConstraint
-			constraintWithItem:_letterTextLabel
+			constraintWithItem:_scrollView
 			attribute:NSLayoutAttributeRight
 			relatedBy:NSLayoutRelationEqual
 			toItem:self.view
 			attribute:NSLayoutAttributeRight
 			multiplier:1.0
-			constant:-20.0
+			constant:0.0
 		]
 	]];
+	_letterTextLabel = [UILabel new];
+	_letterTextLabel.font = _font;
+	self.edgesForExtendedLayout = UIRectEdgeAll;
+	_letterTextLabel.textColor = [UIColor blackColor];
+	_letterTextLabel.numberOfLines = 0;
+	[_scrollView addSubview:_letterTextLabel];
+	_scrollView.letterTextLabel = _letterTextLabel;
+	_topLeftImageView = [UIImageView new];
+	_topLeftImageView.image = [UIImage imageNamed:@"mail_top_left"];
+	[_scrollView addSubview:_topLeftImageView];
+	_scrollView.topLeftImageView = _topLeftImageView;
+	_bottomRightImageView = [UIImageView new];
+	_bottomRightImageView.image = [UIImage imageNamed:@"mail_bottom_right"];
+	[_scrollView addSubview:_bottomRightImageView];
+	_scrollView.bottomRightImageView = _bottomRightImageView;
+	[_scrollView setNeedsLayout];
+	[_scrollView layoutIfNeeded];
 	[self reloadData];
 	[MMUserDefaults addObserver:self forKey:@"mails" selector:@selector(reloadData)];
 }
