@@ -19,14 +19,26 @@ static NSArray *_URLPaths;
 - (BOOL)application:(UIApplication *)application
 	didFinishLaunchingWithOptions:(NSDictionary<UIApplicationLaunchOptionsKey, id> *)options
 {
-	[[NSUserDefaults standardUserDefaults] registerDefaults:@{ @"mails": @[] }];
-	[[NSUserDefaults standardUserDefaults] synchronize];
 	_window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
 	_rootViewController = [[UINavigationController alloc] initWithRootViewController:[MMMRootViewController new]];
+	_rootViewController.topViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
 	_rootViewController.navigationBar.prefersLargeTitles = NO;
 	_window.rootViewController = _rootViewController;
 	if (!options[UIApplicationLaunchOptionsURLKey]) {
-		// Open the last viewed view controller
+		NSNumber *lastViewControllerIndexNumber = [[NSUserDefaults standardUserDefaults] objectForKey:@"lastVCIndex"];
+		if (lastViewControllerIndexNumber) {
+			NSUInteger index = lastViewControllerIndexNumber.unsignedIntegerValue;
+			if (index < [MMMRootViewController rowTitles].count) {
+				MMMMailListViewController *vc = [[MMMMailListViewController alloc]
+					initWithFilter:[MMMRootViewController rowFilters][index]
+				];
+				vc.title = [MMMRootViewController rowTitles][index];
+				[_rootViewController
+					pushViewController:vc
+					animated:NO
+				];
+			}
+		}
 	}
 	[_window makeKeyAndVisible];
 	return YES;

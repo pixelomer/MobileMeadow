@@ -12,7 +12,6 @@ static NSArray *_rowTitles;
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
-	self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
 	self.title = @"MobileMeadow Mail";
 }
 
@@ -39,7 +38,13 @@ static NSArray *_rowTitles;
 	}
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+	[super viewDidAppear:animated];
+	[[NSUserDefaults standardUserDefaults] removeObjectForKey:@"lastVCIndex"];
+}
+
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+	[[NSUserDefaults standardUserDefaults] setObject:@(indexPath.row) forKey:@"lastVCIndex"];
 	MMMMailListViewController *vc = [[MMMMailListViewController alloc] initWithFilter:_rowFilters[indexPath.row]];
 	vc.title = _rowTitles[indexPath.row];
 	[self.navigationController pushViewController:vc animated:YES];
