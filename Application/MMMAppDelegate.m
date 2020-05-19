@@ -1,10 +1,24 @@
 #import "MMMAppDelegate.h"
 #import "MMMRootViewController.h"
 #import "MMMMailListViewController.h"
+#import "MMMComposeViewController.h"
 
 @implementation MMMAppDelegate
 
 static NSArray *_URLPaths;
+static MMMAppDelegate *_appDelegate;
+
+- (void)handleComposeButton {
+	[_rootViewController
+		presentViewController:[[UINavigationController alloc] initWithRootViewController:[MMMComposeViewController new]]
+		animated:YES
+		completion:nil
+	];
+}
+
++ (instancetype)sharedInstance {
+	return _appDelegate;
+}
 
 + (void)initialize {
 	if ([MMMAppDelegate class] == self) {
@@ -19,20 +33,9 @@ static NSArray *_URLPaths;
 - (BOOL)application:(UIApplication *)application
 	didFinishLaunchingWithOptions:(NSDictionary<UIApplicationLaunchOptionsKey, id> *)options
 {
+	_appDelegate = self;
 	_window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
 	_rootViewController = [[MMMNavigationController alloc] initWithRootViewController:[MMMRootViewController new]];
-	_rootViewController.sharedToolbarItems = @[
-		[[UIBarButtonItem alloc]
-			initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
-			target:nil
-			action:nil
-		],
-		[[UIBarButtonItem alloc]
-			initWithBarButtonSystemItem:UIBarButtonSystemItemCompose
-			target:nil
-			action:nil
-		]
-	];
 	_rootViewController.toolbarHidden = NO;
 	_rootViewController.topViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
 	_rootViewController.navigationBar.prefersLargeTitles = NO;

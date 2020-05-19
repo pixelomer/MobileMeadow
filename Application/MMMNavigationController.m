@@ -1,17 +1,22 @@
 #import "MMMNavigationController.h"
+#import "MMMAppDelegate.h"
 
 @implementation MMMNavigationController
 
 - (void)pushViewController:(__kindof UIViewController *)vc animated:(BOOL)animated {
-	vc.toolbarItems = _sharedToolbarItems;
+	[vc setToolbarItems:@[
+		[[UIBarButtonItem alloc]
+			initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
+			target:nil
+			action:nil
+		],
+		[[UIBarButtonItem alloc]
+			initWithBarButtonSystemItem:UIBarButtonSystemItemCompose
+			target:[MMMAppDelegate sharedInstance]
+			action:@selector(handleComposeButton)
+		]
+	] animated:NO];
 	[super pushViewController:vc animated:animated];
-}
-
-- (void)setSharedToolbarItems:(NSArray *)newItems {
-	_sharedToolbarItems = newItems;
-	for (UIViewController *vc in self.viewControllers) {
-		vc.toolbarItems = newItems;
-	}
 }
 
 @end
