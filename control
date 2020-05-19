@@ -3,7 +3,15 @@ Name: MobileMeadow
 Depends: mobilesubstrate
 Version: 0.0.1
 Architecture: iphoneos-arm
-Description: An awesome MobileSubstrate tweak!
+Description: Turn your phone into a meadow
+  Turn your phone into a meadow.
+  Add flowers to your apps.
+  Let birds fly on your screen.
+  Receive short and encouraging letters from strangers.
+  Send others your own letters.
+  Welcome to MobileMeadow.
+  .
+  Requires iOS 13.0 or later. This version only supports devices with a rectangle dock.
 Maintainer: PixelOmer
 Author: PixelOmer
 Section: Tweaks
