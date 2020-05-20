@@ -1,10 +1,14 @@
 #import "MMUserDefaultsServer.h"
+#import <objc/runtime.h>
+#import "MMUserDefaults.h"
 
 @implementation MMUserDefaultsServer
 
 static BOOL _isRunning;
 static NSString *_currentLockOwner;
 static NSMutableArray<NSArray<NSString *> *> *_lockQueue;
+static BOOL _isRemoteNotification;
+static NSDictionary<NSString *, NSString *> *_selectorDictionary;
 
 + (BOOL)isCurrentProcessServer {
 	return _isRunning;
@@ -25,45 +29,48 @@ static NSMutableArray<NSArray<NSString *> *> *_lockQueue;
 			format:@"%@ can only run in SpringBoard", NSStringFromClass(self)
 		];
 	}
+	_selectorDictionary = @{
+		@"com.pixelomer.mobilemeadow/ReleaseLock" : @"clientWantsToReleaseLockWithNotification:",
+		@"com.pixelomer.mobilemeadow/AcquireLock" : @"clientWantsToAcquireLockWithNotification:",
+		@"com.pixelomer.mobilemeadow/GetObject" : @"clientWantsToGetObjectWithNotification:",
+		@"com.pixelomer.mobilemeadow/SetObject" : @"clientWantsToSetObjectWithNotification:"
+	};
 	_currentLockOwner = nil;
 	_lockQueue = [NSMutableArray new];
-	[[NSDistributedNotificationCenter defaultCenter]
-		addObserver:self
-		selector:@selector(clientWantsToReleaseLockWithNotification:)
-		name:@"com.pixelomer.mobilemeadow/ReleaseLock"
-		object:nil
-		suspensionBehavior:NSNotificationSuspensionBehaviorDeliverImmediately
-	];
-	[[NSDistributedNotificationCenter defaultCenter]
-		addObserver:self
-		selector:@selector(clientWantsToAcquireLockWithNotification:)
-		name:@"com.pixelomer.mobilemeadow/AcquireLock"
-		object:nil
-		suspensionBehavior:NSNotificationSuspensionBehaviorDeliverImmediately
-	];
-	[[NSDistributedNotificationCenter defaultCenter]
-		addObserver:self
-		selector:@selector(clientWantsToGetObjectWithNotification:)
-		name:@"com.pixelomer.mobilemeadow/GetObject"
-		object:nil
-		suspensionBehavior:NSNotificationSuspensionBehaviorDeliverImmediately
-	];
-	[[NSDistributedNotificationCenter defaultCenter]
-		addObserver:self
-		selector:@selector(clientWantsToSetObjectWithNotification:)
-		name:@"com.pixelomer.mobilemeadow/SetObject"
-		object:nil
-		suspensionBehavior:NSNotificationSuspensionBehaviorDeliverImmediately
-	];
+	for (NSString *name in _selectorDictionary) {
+		[[NSDistributedNotificationCenter defaultCenter]
+			addObserver:self
+			selector:@selector(_handleRemoteNotification:)
+			name:name
+			object:nil
+			suspensionBehavior:NSNotificationSuspensionBehaviorDeliverImmediately
+		];
+	}
 }
 
++ (void)_handleRemoteNotification:(NSNotification *)notif { @synchronized (self) {
+	_isRemoteNotification = YES;
+	[self handleNotification:notif];
+	_isRemoteNotification = NO;
+}}
+
++ (void)handleNotification:(NSNotification *)notif { @synchronized (self) {
+	NSString *selectorName = _selectorDictionary[notif.name];
+	if (!selectorName) return;
+	SEL selector = NSSelectorFromString(selectorName);
+	((void(*)(Class,SEL,NSNotification *))
+	(class_getMethodImplementation(objc_getMetaClass(class_getName(self)), selector)))
+	(self, selector, notif);
+}}
+
 + (void)terminateClient:(NSString *)bundleIdentifier exceptionName:(NSExceptionName)name message:(NSString *)message {
-	[[NSDistributedNotificationCenter defaultCenter]
+	if (_isRemoteNotification) [[NSDistributedNotificationCenter defaultCenter]
 		postNotificationName:@"com.pixelomer.mobilemeadow/Error"
 		object:bundleIdentifier
 		userInfo:@{ @"exceptionName" : name, @"exceptionMessage" : message }
 		deliverImmediately:YES
 	];
+	else [NSException raise:name format:@"%@", message];
 }
 
 + (void)terminateClient:(NSString *)client withNoLockErrorForSelector:(SEL)selector {
@@ -83,30 +90,39 @@ static NSMutableArray<NSArray<NSString *> *> *_lockQueue;
 	if (!newOwnerData) return;
 	[_lockQueue removeObjectAtIndex:0];
 	_currentLockOwner = newOwnerData[0];
-	[[NSDistributedNotificationCenter defaultCenter]
+	NSLog(@"New lock owner: %@", _currentLockOwner);
+	if (_isRemoteNotification) [[NSDistributedNotificationCenter defaultCenter]
 		postNotificationName:@"com.pixelomer.mobilemeadow/HeresYourLock"
 		object:newOwnerData[0]
 		userInfo:@{ @"completion" : newOwnerData[1] }
 		deliverImmediately:YES
 	];
+	else {
+		void(^block)(void) = (void(^)(void))(__bridge id)(void *)[newOwnerData[1] unsignedLongValue];
+		if (block) {
+			@try { block(); }
+			@catch (NSException *ex) { [MMUserDefaults releaseLock]; @throw; }
+		}
+	}
 }
 
-+ (void)clientWantsToReleaseLockWithNotification:(NSNotification *)notif { @synchronized (self) {
++ (void)clientWantsToReleaseLockWithNotification:(NSNotification *)notif {
 	if (![_currentLockOwner isEqualToString:notif.object]) {
 		[self terminateClient:notif.object withNoLockErrorForSelector:_cmd];
 		return;
 	}
+	NSLog(@"%@ has released its lock. The lock can now be acquired by something else.", _currentLockOwner);
 	_currentLockOwner = nil;
 	[self pickNewLockOwnerIfNecessary];
-}}
+}
 
-+ (void)clientWantsToAcquireLockWithNotification:(NSNotification *)notif { @synchronized (self) {
++ (void)clientWantsToAcquireLockWithNotification:(NSNotification *)notif {
 	if (![notif.userInfo[@"completion"] isKindOfClass:[NSNumber class]] || !notif.object) return;
 	[_lockQueue addObject:@[notif.object, notif.userInfo[@"completion"]]];
 	[self pickNewLockOwnerIfNecessary];
-}}
+}
 
-+ (void)clientWantsToGetObjectWithNotification:(NSNotification *)notif { @synchronized (self) {
++ (void)clientWantsToGetObjectWithNotification:(NSNotification *)notif {
 	if ((![notif.userInfo[@"nolock"] isKindOfClass:[NSNumber class]]
 		 || ![notif.userInfo[@"nolock"] boolValue]) &&
 		![_currentLockOwner isEqualToString:notif.object])
@@ -123,20 +139,28 @@ static NSMutableArray<NSArray<NSString *> *> *_lockQueue;
 			@{ @"data" : object, @"completion" : notif.userInfo[@"completion"] } :
 			@{ @"completion" : notif.userInfo[@"completion"] }
 		);
-		[[NSDistributedNotificationCenter defaultCenter]
+		if (_isRemoteNotification) [[NSDistributedNotificationCenter defaultCenter]
 			postNotificationName:@"com.pixelomer.mobilemeadow/HeresYourData"
 			object:notif.object
 			userInfo:userInfo
 			deliverImmediately:YES
 		];
+		else {
+			void(^block)(id) = (void(^)(id))(__bridge id)(void *)[userInfo[@"completion"] unsignedLongValue];
+			if (block) {
+				@try { block(userInfo[@"data"]); }
+				@catch (NSException *ex) { [MMUserDefaults releaseLock]; @throw; }
+			}
+		}
 	}
-}}
+}
 
-+ (void)clientWantsToSetObjectWithNotification:(NSNotification *)notif { @synchronized (self) {
++ (void)clientWantsToSetObjectWithNotification:(NSNotification *)notif {
 	if (![_currentLockOwner isEqualToString:notif.object]) {
 		[self terminateClient:notif.object withNoLockErrorForSelector:_cmd];
 		return;
 	}
+	NSLog(@"The server will now set the value for key %@ to %@.", notif.userInfo[@"key"],notif.userInfo[@"object"]);
 	id old = [[NSUserDefaults standardUserDefaults]
 		objectForKey:notif.userInfo[@"key"]
 		inDomain:@"com.pixelomer.meadowmail"
@@ -147,22 +171,36 @@ static NSMutableArray<NSArray<NSString *> *> *_lockQueue;
 		inDomain:@"com.pixelomer.meadowmail"
 	];
 	if (notif.userInfo[@"completion"]) {
-		[[NSDistributedNotificationCenter defaultCenter]
+		if (_isRemoteNotification) [[NSDistributedNotificationCenter defaultCenter]
 			postNotificationName:@"com.pixelomer.mobilemeadow/SetObjectCompleted"
 			object:notif.object
 			userInfo:@{ @"completion" : notif.userInfo[@"completion"] }
 			deliverImmediately:YES
 		];
+		else {
+			void(^block)(void) = (void(^)(void))(__bridge id)(void *)[notif.userInfo[@"completion"] unsignedLongValue];
+			if (block) {
+				@try { block(); }
+				@catch (NSException *ex) { [MMUserDefaults releaseLock]; @throw; }
+			}
+		}
 	}
 	NSMutableDictionary *dict = [NSMutableDictionary new];
 	if (old) dict[@"old"] = old;
 	if (notif.userInfo[@"object"]) dict[@"new"] = notif.userInfo[@"object"];
+	dict[@"local"] = @NO;
 	[[NSDistributedNotificationCenter defaultCenter]
 		postNotificationName:@"com.pixelomer.mobilemeadow/ValueForKeyChanged"
 		object:notif.userInfo[@"key"]
 		userInfo:dict
 		deliverImmediately:YES
 	];
-}}
+	dict[@"local"] = @YES;
+	[[NSNotificationCenter defaultCenter]
+		postNotificationName:@"com.pixelomer.mobilemeadow/ValueForKeyChanged"
+		object:notif.userInfo[@"key"]
+		userInfo:dict
+	];
+}
 
 @end

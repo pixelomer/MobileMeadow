@@ -32,8 +32,8 @@ static NSArray *_rowTitles;
 		];
 		_rowTitles = @[
 			@"Inbox",
-			@"Sent Letters",
-			@"Starred Letters"
+			@"Sent",
+			@"Starred"
 		];
 	}
 }

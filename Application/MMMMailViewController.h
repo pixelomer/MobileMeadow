@@ -7,6 +7,7 @@
 	UIImageView *_topLeftImageView;
 	MMMMailScrollView *_scrollView;
 	UIImageView *_bottomRightImageView;
+	BOOL _starred;
 }
 @property (nonatomic, readonly) NSUInteger mailIndex;
 - (instancetype)initWithMailIndex:(NSUInteger)index;

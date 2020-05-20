@@ -1,4 +1,5 @@
 #import "MMUserDefaults.h"
+#import "MMUserDefaultsServer.h"
 
 @implementation MMUserDefaults
 
@@ -9,6 +10,27 @@ static NSPointerArray *_observers;
 static NSMutableArray *_observerKeys;
 static NSMutableArray *_observerSelectors;
 static NSString *_uniqueObject;
+
++ (void)postNotificationName:(NSNotificationName)name
+	object:(NSString *)obj
+	userInfo:(NSDictionary *)userInfo
+{
+	if ([MMUserDefaultsServer isCurrentProcessServer]) {
+		[MMUserDefaultsServer handleNotification:[NSNotification
+			notificationWithName:name
+			object:obj
+			userInfo:userInfo
+		]];
+	}
+	else {
+		[[NSDistributedNotificationCenter defaultCenter]
+			postNotificationName:name
+			object:obj
+			userInfo:userInfo
+			deliverImmediately:YES
+		];
+	}
+}
 
 + (void)load {
 	if (self == [MMUserDefaults class]) {
@@ -59,6 +81,12 @@ static NSString *_uniqueObject;
 				object:nil
 				suspensionBehavior:NSNotificationSuspensionBehaviorDeliverImmediately
 			];
+			[[NSNotificationCenter defaultCenter]
+				addObserver:self
+				selector:@selector(didReceiveValueChangeNotification:)
+				name:@"com.pixelomer.mobilemeadow/ValueForKeyChanged"
+				object:nil
+			];
 		};
 		// just in case, it might not be necessary idk
 		if (![NSThread isMainThread]) dispatch_sync(dispatch_get_main_queue(), block);
@@ -100,7 +128,7 @@ static NSString *_uniqueObject;
 
 + (void)setObject:(id)object forKey:(NSString *)key completion:(void(^)(void))completion { @synchronized (_retainArrayLock) {
 	if (completion) [_retainArray addObject:(id)completion];
-	[[NSDistributedNotificationCenter defaultCenter]
+	[self
 		postNotificationName:@"com.pixelomer.mobilemeadow/SetObject"
 		object:_uniqueObject
 		userInfo:@{
@@ -108,7 +136,6 @@ static NSString *_uniqueObject;
 			@"key" : key,
 			@"object" : object
 		}
-		deliverImmediately:YES
 	];
 }}
 
@@ -127,7 +154,7 @@ static NSString *_uniqueObject;
 	}
 	@synchronized (_retainArrayLock) {
 		[_retainArray addObject:(id)completion];
-		[[NSDistributedNotificationCenter defaultCenter]
+		[self
 			postNotificationName:@"com.pixelomer.mobilemeadow/GetObject"
 			object:_uniqueObject
 			userInfo:@{
@@ -135,7 +162,6 @@ static NSString *_uniqueObject;
 				@"key" : key,
 				@"nolock" : @(noLock)
 			}
-			deliverImmediately:YES
 		];
 	}
 }
@@ -183,22 +209,20 @@ static NSString *_uniqueObject;
 		format:@"Lock acquisition completion block must not be null"
 	];
 	[_retainArray addObject:(id)completion];
-	[[NSDistributedNotificationCenter defaultCenter]
+	[self
 		postNotificationName:@"com.pixelomer.mobilemeadow/AcquireLock"
 		object:_uniqueObject
 		userInfo:@{
 			@"completion" : [NSNumber numberWithUnsignedLong:(unsigned long)(__bridge void *)[_retainArray lastObject]]
 		}
-		deliverImmediately:YES
 	];
 }}
 
 + (void)releaseLock {
-	[[NSDistributedNotificationCenter defaultCenter]
+	[self
 		postNotificationName:@"com.pixelomer.mobilemeadow/ReleaseLock"
 		object:_uniqueObject
 		userInfo:nil
-		deliverImmediately:YES
 	];
 }
 
@@ -210,6 +234,9 @@ static NSString *_uniqueObject;
 }
 
 + (void)didReceiveValueChangeNotification:(NSNotification *)notif { @synchronized (_observerArrayLock) {
+	if ([MMUserDefaultsServer isCurrentProcessServer] && ![notif.userInfo[@"local"] boolValue]) {
+		return;
+	}
 	[self compactObserverArrays];
 	for (NSUInteger i=0; i<_observerKeys.count; i++) {
 		NSString *currentKey = _observerKeys[i];

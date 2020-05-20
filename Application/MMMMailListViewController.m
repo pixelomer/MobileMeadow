@@ -52,7 +52,7 @@
 		cell.detailTextLabel.font = cell.textLabel.font;
 		cell.detailTextLabel.textColor = [UIColor secondaryLabelColor];
 		cell.detailTextLabel.numberOfLines = 3;
-		cell.detailTextLabel.lineBreakMode = NSLineBreakByWordWrapping;
+		cell.detailTextLabel.lineBreakMode = NSLineBreakByTruncatingTail;
 	}
 	cell.backgroundColor = [cell.tintColor colorWithAlphaComponent:((_unread && !indexPath.row && self.showsUnreadTint) ? 0.25 : 0.0)];
 	NSDate *date = _mails[indexPath.row][@"date"];
@@ -128,6 +128,7 @@
 	}
 	NSUInteger mailIndex = [_mails[indexPath.row][@"index"] unsignedIntegerValue];
 	MMMMailViewController *vc = [[MMMMailViewController alloc] initWithMailIndex:mailIndex];
+	vc.title = _mails[indexPath.row][@"title"];
 	[self.navigationController pushViewController:vc animated:YES];
 }
 
