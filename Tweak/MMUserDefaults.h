@@ -20,14 +20,16 @@
 
 // Use this to release a lock after acquiring it. This has to be done to free the lock
 // so that it can be acquired by other processes. An exception will be thrown if the
-// process doesn't own the lock.
+// process doesn't own the lock. Do not call this outside of a completion block for
+// acquireLockWithCompletion:, since it might cause another thread to lose its lock
+// or it might cause an exception to be thrown since the process may not own the lock.
 + (void)releaseLock;
 
 // Possible signatures:
-//   handleKeyChange
-//   handleKeyChange:(id)key
-//   handleKeyChange:(id)key fromValue:(id)old
-//   handleKeyChange:(id)key fromValue:(id)old toValue:(id)new
+//   handleValueChange
+//   handleValueChangeForKey:(id)key
+//   handleValueChangeForKey:(id)key fromValue:(id)old
+//   handleValueChangeForKey:(id)key fromValue:(id)old toValue:(id)new
 + (void)addObserver:(id)observer forKey:(NSString *)key selector:(SEL)selector;
 
 @end
