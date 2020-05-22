@@ -1,6 +1,7 @@
 #import "MMMMailListViewController.h"
 #import "MMMMailViewController.h"
 #import <objc/runtime.h>
+#import "UIColor+MeadowMail.h"
 
 @implementation MMMMailListViewController
 
@@ -50,7 +51,7 @@
 		cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 		cell.textLabel.numberOfLines = 1;
 		cell.detailTextLabel.font = cell.textLabel.font;
-		cell.detailTextLabel.textColor = [UIColor secondaryLabelColor];
+		cell.detailTextLabel.textColor = [UIColor meadow_secondaryLabelColor];
 		cell.detailTextLabel.numberOfLines = 3;
 		cell.detailTextLabel.lineBreakMode = NSLineBreakByTruncatingTail;
 	}
@@ -62,7 +63,7 @@
 	[attributedString appendAttributedString:[[NSAttributedString alloc]
 		initWithString:[_mails[indexPath.row][@"title"] stringByAppendingString:@" "]
 		attributes:@{
-			NSForegroundColorAttributeName : [UIColor labelColor]
+			NSForegroundColorAttributeName : [UIColor meadow_labelColor]
 		}
 	]];
 	[attributedString appendAttributedString:[[NSAttributedString alloc]
@@ -72,7 +73,7 @@
 			timeStyle:aDayPassed ? NSDateFormatterNoStyle : NSDateFormatterShortStyle
 		]
 		attributes:@{
-			NSForegroundColorAttributeName : [UIColor secondaryLabelColor]
+			NSForegroundColorAttributeName : [UIColor meadow_secondaryLabelColor]
 		}
 	]];
 	cell.textLabel.attributedText = attributedString.copy;

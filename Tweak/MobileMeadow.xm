@@ -144,7 +144,9 @@ static MMGroundContainerView *_dockGround;
 		}
 		else if ([self.superview isKindOfClass:[UIToolbar class]]) {
 			CGPoint convertedPoint = [self.superview convertPoint:CGPointZero toView:nil];
-			if ((convertedPoint.y + self.superview.frame.size.height) != UIScreen.mainScreen.bounds.size.height) {
+			if (((convertedPoint.y + self.superview.frame.size.height) != UIScreen.mainScreen.bounds.size.height) &&
+				(self._viewControllerForAncestor.navigationController.toolbar != self.superview))
+			{
 				return;
 			}
 		}

@@ -38,7 +38,9 @@ static MMMAppDelegate *_appDelegate;
 	_rootViewController = [[MMMNavigationController alloc] initWithRootViewController:[MMMRootViewController new]];
 	_rootViewController.toolbarHidden = NO;
 	_rootViewController.topViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
-	_rootViewController.navigationBar.prefersLargeTitles = NO;
+	if (@available(iOS 11.0, *)) {
+		_rootViewController.navigationBar.prefersLargeTitles = NO;
+	}
 	_window.rootViewController = _rootViewController;
 	if (!options[UIApplicationLaunchOptionsURLKey]) {
 		NSNumber *lastViewControllerIndexNumber = [[NSUserDefaults standardUserDefaults] objectForKey:@"lastVCIndex"];
