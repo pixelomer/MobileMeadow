@@ -32,4 +32,7 @@
 //   handleValueChangeForKey:(id)key fromValue:(id)old toValue:(id)new
 + (void)addObserver:(id)observer forKey:(NSString *)key selector:(SEL)selector;
 
+// Other
++ (void)checkIfServerIsAliveWithCompletion:(void(^)(BOOL))completion;
+
 @end

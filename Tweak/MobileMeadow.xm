@@ -128,6 +128,25 @@ static MMGroundContainerView *_dockGround;
 %end
 
 %group App
+%hook UITextView
+%property (nonatomic, assign) BOOL meadow_verticalOnly;
+
+- (void)layoutSubviews {
+	if ([self valueForKey:@"meadow_verticalOnly"]) {
+		UIEdgeInsets insets;
+		if (@available(iOS 11.0, *)) {
+			insets = self.adjustedContentInset;
+		}
+		else {
+			insets = self.contentInset;
+		}
+		self.contentOffset = CGPointMake(-insets.left, self.contentOffset.y);
+	}
+	%orig;
+}
+
+%end
+
 %hook _UIBarBackground
 %property (nonatomic, strong) MMGroundContainerView *groundContainer;
 

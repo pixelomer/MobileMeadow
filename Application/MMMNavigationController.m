@@ -19,4 +19,15 @@
 	[super pushViewController:vc animated:animated];
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+	[super viewDidAppear:animated];
+	[MMUserDefaults checkIfServerIsAliveWithCompletion:^(BOOL isAlive){
+		if (!isAlive) {
+			NSString *title = @"Error";
+			NSString *message = @"The MobileMeadow user defaults server isn't responding. Make sure that MobileMeadow is loaded into SpringBoard.";
+			MobileMeadowShowError(title, message, self);
+		}
+	}];
+}
+
 @end

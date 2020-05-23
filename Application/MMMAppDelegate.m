@@ -2,6 +2,7 @@
 #import "MMMRootViewController.h"
 #import "MMMMailListViewController.h"
 #import "MMMComposeViewController.h"
+#import "MMMErrorRootViewController.h"
 
 @implementation MMMAppDelegate
 
@@ -35,6 +36,12 @@ static MMMAppDelegate *_appDelegate;
 {
 	_appDelegate = self;
 	_window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+	if (!NSClassFromString(@"MMMailManager")) {
+		_rootViewController = (id)[MMMErrorRootViewController new];
+		_window.rootViewController = _rootViewController;
+		[_window makeKeyAndVisible];
+		return NO;
+	}
 	_rootViewController = [[MMMNavigationController alloc] initWithRootViewController:[MMMRootViewController new]];
 	_rootViewController.toolbarHidden = NO;
 	_rootViewController.topViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
@@ -66,6 +73,7 @@ static MMMAppDelegate *_appDelegate;
 	openURL:(NSURL *)url
 	options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options
 {
+	if (!NSClassFromString(@"MMMailManager")) return NO;
 	// If the URL is valid, pop to the first view controller and push the wanted view controller
 	if (!url.host) return NO;
 	if (![url.scheme isEqualToString:@"meadowmail"]) return NO;

@@ -33,7 +33,8 @@ static NSDictionary<NSString *, NSString *> *_selectorDictionary;
 		@"com.pixelomer.mobilemeadow/ReleaseLock" : @"clientWantsToReleaseLockWithNotification:",
 		@"com.pixelomer.mobilemeadow/AcquireLock" : @"clientWantsToAcquireLockWithNotification:",
 		@"com.pixelomer.mobilemeadow/GetObject" : @"clientWantsToGetObjectWithNotification:",
-		@"com.pixelomer.mobilemeadow/SetObject" : @"clientWantsToSetObjectWithNotification:"
+		@"com.pixelomer.mobilemeadow/SetObject" : @"clientWantsToSetObjectWithNotification:",
+		@"com.pixelomer.mobilemeadow/RespondIfAlive" : @"clientWantsToKnowThatTheServerIsAliveWithNotification:"
 	};
 	_currentLockOwner = nil;
 	_lockQueue = [NSMutableArray new];
@@ -46,6 +47,15 @@ static NSDictionary<NSString *, NSString *> *_selectorDictionary;
 			suspensionBehavior:NSNotificationSuspensionBehaviorDeliverImmediately
 		];
 	}
+}
+
++ (void)clientWantsToKnowThatTheServerIsAliveWithNotification:(NSNotification *)notif {
+	[[NSDistributedNotificationCenter defaultCenter]
+		postNotificationName:@"com.pixelomer.mobilemeadow/IAmAlive"
+		object:notif.object
+		userInfo:notif.userInfo
+		deliverImmediately:YES
+	];
 }
 
 + (void)_handleRemoteNotification:(NSNotification *)notif { @synchronized (self) {

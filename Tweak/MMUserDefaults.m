@@ -6,10 +6,31 @@
 static NSMutableArray *_retainArray;
 static NSObject *_retainArrayLock;
 static NSObject *_observerArrayLock;
+static NSObject *_checkBlockArrayLock;
 static NSPointerArray *_observers;
 static NSMutableArray *_observerKeys;
 static NSMutableArray *_observerSelectors;
 static NSString *_uniqueObject;
+static NSMutableArray *_newCheckBlocks;
+static NSMutableArray *_oldCheckBlocks;
+
++ (void)heartbeat:(NSTimer *)timer {
+	NSArray *olderCheckBlocks;
+	@synchronized (_checkBlockArrayLock) {
+		olderCheckBlocks = _oldCheckBlocks.copy;
+		if (_newCheckBlocks.count) {
+			_oldCheckBlocks = _newCheckBlocks.mutableCopy;
+			_newCheckBlocks = [NSMutableArray new];
+		}
+		else {
+			_oldCheckBlocks = nil;
+		}
+	}
+	if (olderCheckBlocks.count) for (id completionObj in olderCheckBlocks) {
+		void(^completion)(BOOL) = (void(^)(BOOL))completionObj;
+		completion(NO);
+	}
+}
 
 + (void)postNotificationName:(NSNotificationName)name
 	object:(NSString *)obj
@@ -39,6 +60,8 @@ static NSString *_uniqueObject;
 		_observerArrayLock = [NSObject new];
 		_observers = [NSPointerArray weakObjectsPointerArray];
 		_observerKeys = [NSMutableArray new];
+		_newCheckBlocks = [NSMutableArray new];
+		_checkBlockArrayLock = [NSObject new];
 		_observerSelectors = [NSMutableArray new];
 		_uniqueObject = [NSString
 			stringWithFormat:@"%u|%@",
@@ -69,6 +92,13 @@ static NSString *_uniqueObject;
 			];
 			[[NSDistributedNotificationCenter defaultCenter]
 				addObserver:self
+				selector:@selector(didReceiveHeartbeatNotification:)
+				name:@"com.pixelomer.mobilemeadow/IAmAlive"
+				object:_uniqueObject
+				suspensionBehavior:NSNotificationSuspensionBehaviorDeliverImmediately
+			];
+			[[NSDistributedNotificationCenter defaultCenter]
+				addObserver:self
 				selector:@selector(didReceiveErrorNotification:)
 				name:@"com.pixelomer.mobilemeadow/Error"
 				object:_uniqueObject
@@ -87,11 +117,33 @@ static NSString *_uniqueObject;
 				name:@"com.pixelomer.mobilemeadow/ValueForKeyChanged"
 				object:nil
 			];
+			NSTimer *timer = [NSTimer
+				timerWithTimeInterval:1.0
+				target:self
+				selector:@selector(heartbeat:)
+				userInfo:nil
+				repeats:YES
+			];
+			[[NSRunLoop currentRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
 		};
 		// just in case, it might not be necessary idk
 		if (![NSThread isMainThread]) dispatch_sync(dispatch_get_main_queue(), block);
 		else block();
 	}
+}
+
++ (void)didReceiveHeartbeatNotification:(NSNotification *)notif {
+	void(^completion)(BOOL) = (void(^)(BOOL))(__bridge id)(void *)[notif.userInfo[@"completion"] unsignedLongValue];
+	@synchronized (_checkBlockArrayLock) {
+		if ([_newCheckBlocks containsObject:(id)completion]) {
+			[_newCheckBlocks removeObjectAtIndex:[_newCheckBlocks indexOfObject:(id)completion]];
+		}
+		else if ([_oldCheckBlocks containsObject:(id)completion]) {
+			[_oldCheckBlocks removeObjectAtIndex:[_oldCheckBlocks indexOfObject:(id)completion]];
+		}
+		else return;
+	}
+	completion(YES);
 }
 
 + (void)compactObserverArrays {
@@ -100,6 +152,22 @@ static NSString *_uniqueObject;
 		[_observers removePointerAtIndex:i];
 		[_observerKeys removeObjectAtIndex:i];
 		[_observerSelectors removeObjectAtIndex:i];
+	}
+}
+
++ (void)checkIfServerIsAliveWithCompletion:(void(^)(BOOL))completion {
+	if (!completion) return;
+	if ([MMUserDefaultsServer isCurrentProcessServer]) completion(YES);
+	else {
+		@synchronized (_checkBlockArrayLock) {
+			[_newCheckBlocks addObject:(id)completion];
+			completion = (void(^)(BOOL))_newCheckBlocks.lastObject;
+		}
+		[self
+			postNotificationName:@"com.pixelomer.mobilemeadow/RespondIfAlive"
+			object:_uniqueObject
+			userInfo:@{ @"completion" : @((unsigned long)(__bridge void *)(id)completion) }
+		];
 	}
 }
 
