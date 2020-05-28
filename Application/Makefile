@@ -2,7 +2,7 @@ include $(THEOS)/makefiles/common.mk
 
 APPLICATION_NAME = MeadowMail
 
-MeadowMail_FILES = $(wildcard *.m)
+MeadowMail_FILES = $(wildcard */*.m) $(wildcard *.m)
 MeadowMail_FRAMEWORKS = UIKit CoreGraphics
 MeadowMail_CODESIGN_FLAGS = -Sentitlements.xml
 MeadowMail_CFLAGS = -fobjc-arc

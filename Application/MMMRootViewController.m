@@ -1,4 +1,5 @@
 #import "MMMRootViewController.h"
+#import "IQKeyboardManager/IQKeyboardManager.h"
 #import "MMMMailListViewController.h"
 
 @implementation MMMRootViewController
@@ -7,12 +8,15 @@ static NSArray *_rowFilters;
 static NSArray *_rowTitles;
 
 - (instancetype)init {
-	return [super initWithStyle:UITableViewStyleGrouped];
+	if ((self = [super initWithStyle:UITableViewStyleGrouped])) {
+		self.title = @"MobileMeadow Mail";
+	}
+	return self;
 }
 
 - (void)viewDidLoad {
+	[IQKeyboardManager sharedManager].enable = YES;
 	[super viewDidLoad];
-	self.title = @"MobileMeadow Mail";
 }
 
 + (NSArray *)rowFilters {
