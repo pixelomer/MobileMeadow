@@ -12,6 +12,7 @@ static MMMAppDelegate *_appDelegate;
 
 - (void)presentViewControllerWithClass:(Class)cls {
 	UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:[cls new]];
+	navController.topViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
 	if (@available(iOS 13.0, *)) {
 		navController.modalPresentationStyle = UIModalPresentationFullScreen;
 	}

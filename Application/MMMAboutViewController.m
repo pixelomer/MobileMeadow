@@ -49,13 +49,15 @@ static NSArray *_aboutContent;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-	id object = [[[_aboutContent[indexPath.section] objectAtIndex:2] objectAtIndex:indexPath.row] objectAtIndex:1];
+	NSArray *rowData = [[_aboutContent[indexPath.section] objectAtIndex:2] objectAtIndex:indexPath.row];
+	id object = [rowData objectAtIndex:1];
 	if ([object isKindOfClass:[NSURL class]]) {
 		[[UIApplication sharedApplication] openURL:object];
 		[self.tableView deselectRowAtIndexPath:indexPath animated:NO];
 	}
 	else if ([object isKindOfClass:[NSString class]]) {
 		UIViewController *vc = [NSClassFromString(object) new];
+		vc.title = [rowData objectAtIndex:0];
 		[self.navigationController pushViewController:vc animated:YES];
 	}
 }
