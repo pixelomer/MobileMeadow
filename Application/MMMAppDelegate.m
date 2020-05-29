@@ -10,8 +10,12 @@ static NSArray *_URLPaths;
 static MMMAppDelegate *_appDelegate;
 
 - (void)handleComposeButton {
+	UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:[MMMComposeViewController new]];
+	if (@available(iOS 13.0, *)) {
+		navController.modalPresentationStyle = UIModalPresentationFullScreen;
+	}
 	[_rootViewController
-		presentViewController:[[UINavigationController alloc] initWithRootViewController:[MMMComposeViewController new]]
+		presentViewController:navController
 		animated:YES
 		completion:nil
 	];
