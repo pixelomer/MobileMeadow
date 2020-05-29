@@ -83,7 +83,7 @@
 				showCompletionMessage(@"Error", JSONObject[@"error"] ?: @"An unknown error occurred.", NO);
 				return;
 			}
-			showCompletionMessage(@"Success", @"Your letter has been successfully sent. Assuming that it doesn't contain anything bad, a stranger will receive your letter soon.", YES);
+			showCompletionMessage(@"Success", @"Your letter has been successfully sent. Assuming that it doesn't contain anything inappropriate, a stranger will receive your letter soon.", YES);
 		}];
 	}];
 }
@@ -99,7 +99,7 @@
 	if (![didComposeBefore boolValue]) {
 		UIAlertController *alert = [UIAlertController
 			alertControllerWithTitle:@"Hello there!"
-			message:@"This page lets you write short and positive letters for other MobileMeadow users in the world. This feature exists so that you can make another person's day a little better :)\n\n- Letters that are sent using this feature cannot be traced back to you in any way by anyone.\n- Before they are sent to someone else, letters will be reviewed by a moderator. If a moderator thinks a letter contains inappropriate content, it will be deleted and it won't be sent to anyone."
+			message:@"This page lets you write short and positive letters for other MobileMeadow users in the world. This feature exists so that you can make another person's day a little better :)\n\n- Letters that are sent using this feature cannot be traced back to you in any way by anyone.\n- Before they are sent to someone else, letters will be reviewed by a moderator. If a moderator thinks a letter contains inappropriate content, it will be deleted and it won't be sent to anyone.\n- Letters must not contain any personal information that can be used to learn exactly who you are. Information such as your country or your nickname is probably fine. The moderators will make the final decision."
 			preferredStyle:UIAlertControllerStyleAlert
 		];
 		[alert addAction:[UIAlertAction
