@@ -6,6 +6,12 @@
 - (void)pushViewController:(__kindof UIViewController *)vc animated:(BOOL)animated {
 	[vc setToolbarItems:@[
 		[[UIBarButtonItem alloc]
+			initWithImage:[UIImage imageNamed:@"detail"]
+			style:UIBarButtonItemStylePlain
+			target:[MMMAppDelegate sharedInstance]
+			action:@selector(handleAboutButton)
+		],
+		[[UIBarButtonItem alloc]
 			initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
 			target:nil
 			action:nil

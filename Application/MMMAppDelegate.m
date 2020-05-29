@@ -3,14 +3,15 @@
 #import "MMMMailListViewController.h"
 #import "MMMComposeViewController.h"
 #import "MMMErrorRootViewController.h"
+#import "MMMAboutViewController.h"
 
 @implementation MMMAppDelegate
 
 static NSArray *_URLPaths;
 static MMMAppDelegate *_appDelegate;
 
-- (void)handleComposeButton {
-	UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:[MMMComposeViewController new]];
+- (void)presentViewControllerWithClass:(Class)cls {
+	UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:[cls new]];
 	if (@available(iOS 13.0, *)) {
 		navController.modalPresentationStyle = UIModalPresentationFullScreen;
 	}
@@ -19,6 +20,14 @@ static MMMAppDelegate *_appDelegate;
 		animated:YES
 		completion:nil
 	];
+}
+
+- (void)handleComposeButton {
+	[self presentViewControllerWithClass:[MMMComposeViewController class]];
+}
+
+- (void)handleAboutButton {
+	[self presentViewControllerWithClass:[MMMAboutViewController class]];
 }
 
 + (instancetype)sharedInstance {
