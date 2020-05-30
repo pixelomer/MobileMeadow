@@ -143,7 +143,6 @@ static BOOL isReceivingMail = NO;
 	NSCalendarUnit flags = (NSCalendarUnitMinute | NSCalendarUnitHour);
 	NSDateComponents *components = [calendar components:flags fromDate:date];
 	NSLog(@"It's %02ld:%02ld. Checking if mail should be delivered...", (long)components.hour, (long)components.minute);
-goto now;
 	if (!components) return;
 	if (components.minute) return;
 	for (NSNumber *hour in hours) {
@@ -153,7 +152,6 @@ goto now;
 		}
 	}
 	if (calendar) return;
-now:
 	NSLog(@"It's time to deliver mail!");
 	NSArray *letter = [self fetchLetter];
 	NSLog(@"Letter: %@", letter);
