@@ -9,6 +9,7 @@
 @interface MMGroundContainerView : UIView {
 	CGFloat _lastUpdateX;
 	MMBirdView *_birdView;
+	NSMutableArray *_imageViews;
 }
 @property (nonatomic, strong, readonly) MMMailBoxView *mailBoxView;
 + (MMGroundContainerView *)springboardSingleton;

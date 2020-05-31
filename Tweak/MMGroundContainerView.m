@@ -3,6 +3,8 @@
 #import "MMBirdView.h"
 #import "MMAirLayerWindow.h"
 #import "MMMailBoxView.h"
+#import <QuartzCore/QuartzCore.h>
+#import <objc/runtime.h>
 
 @implementation MMGroundContainerView
 
@@ -12,10 +14,29 @@ static MMGroundContainerView *_springboardSingleton;
 	return _springboardSingleton;
 }
 
+- (void)applicationDidEnterBackground:(NSNotification *)notification {
+	for (UIImageView *imageView in _imageViews) {
+		[CATransaction begin];
+		[imageView.layer removeAllAnimations];
+		[CATransaction commit];
+		[CATransaction flush];
+	}
+}
+
+- (void)applicationWillOrDidEnterForeground:(NSNotification *)notification {
+	for (UIImageView *imageView in _imageViews) {
+		if (![imageView.layer animationKeys].count) {
+			void(^animate)(BOOL completed) = objc_getAssociatedObject(imageView, @selector(animationBlock));
+			animate(YES);
+		}
+	}
+}
+
 - (instancetype)init {
 	if ((self = [super init])) {
 		self.translatesAutoresizingMaskIntoConstraints = NO;
 		_lastUpdateX = 1.0;
+		_imageViews = [NSMutableArray new];
 		if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.springboard"]) {
 			if (_springboardSingleton) {
 				[NSException
@@ -48,6 +69,24 @@ static MMGroundContainerView *_springboardSingleton;
 				]
 			]];
 		}
+		[NSNotificationCenter.defaultCenter
+			addObserver:self
+			selector:@selector(applicationWillOrDidEnterForeground:)
+			name:UIApplicationWillEnterForegroundNotification
+			object:nil
+		];
+		[NSNotificationCenter.defaultCenter
+			addObserver:self
+			selector:@selector(applicationWillOrDidEnterForeground:)
+			name:UIApplicationDidBecomeActiveNotification
+			object:nil
+		];
+		[NSNotificationCenter.defaultCenter
+			addObserver:self
+			selector:@selector(applicationDidEnterBackground:)
+			name:UIApplicationDidEnterBackgroundNotification
+			object:nil
+		];
 	}
 	return self;
 }
@@ -188,6 +227,7 @@ static MMGroundContainerView *_springboardSingleton;
 	while ([self pointInside:CGPointMake(_lastUpdateX, 1) withEvent:nil]) {
 		UIImage *image = [MMAssets randomImageWithPrefix:@"plant"];
 		UIImageView *imageView = [UIImageView new];
+		[_imageViews addObject:imageView];
 		imageView.image = image;
 		imageView.translatesAutoresizingMaskIntoConstraints = NO;
 		[self addSubview:imageView];
@@ -231,22 +271,19 @@ static MMGroundContainerView *_springboardSingleton;
 		]];
 		_lastUpdateX += image.size.width + arc4random_uniform(20) + 10;
 		UIImageView *__weak weakImageView = imageView;
-		CGFloat initialDegrees = (CGFloat)((int)arc4random_uniform(31) - 15);
 		__block BOOL isLeftToRight = arc4random_uniform(2);
+		CGFloat initialDegrees = (isLeftToRight ? -20.0 : 20.0);
 		CGAffineTransform transform = CGAffineTransformIdentity;
 		transform = CGAffineTransformTranslate(transform, 0.0, imageView.image.size.height);
 		transform = CGAffineTransformRotate(transform, initialDegrees * M_PI/180);
 		transform = CGAffineTransformTranslate(transform, 0.0, -imageView.image.size.height);
-		initialDegrees += 20.0;
-		if (isLeftToRight) initialDegrees = 40.0 - initialDegrees;
-		__block NSTimeInterval interval = initialDegrees/12.0;
 		void(^__block animate)(BOOL) = ^(BOOL finished){
 			isLeftToRight = !isLeftToRight;
 			if (!weakImageView) {
 				animate = nil;
 			}
-			[UIView
-				animateWithDuration:interval
+			if (finished) [UIView
+				animateWithDuration:(1.5 + ((CGFloat)arc4random_uniform(400) / 100.0))
 				delay:0.0
 				options:UIViewAnimationOptionCurveEaseInOut
 				animations:^{
@@ -255,16 +292,17 @@ static MMGroundContainerView *_springboardSingleton;
 					transform = CGAffineTransformRotate(transform, (isLeftToRight ? 20.0 : -20.0) * M_PI/180);
 					transform = CGAffineTransformTranslate(transform, 0.0, -weakImageView.image.size.height);
 					weakImageView.transform = transform;
-					interval = (40.0/12.0);
 				}
 				completion:animate
 			];
 		};
+		objc_setAssociatedObject(imageView, @selector(animationBlock), (id)animate, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 		animate(YES);
 	}
 }
 
 - (void)layoutSubviews {
+	NSLog(@"layoutSubviews");
 	[self updatePlants];
 	[super layoutSubviews];
 }
@@ -320,6 +358,10 @@ static MMGroundContainerView *_springboardSingleton;
 		]
 	]];
 	[self updatePlants];
+}
+
+- (void)dealloc {
+	[NSNotificationCenter.defaultCenter removeObserver:self];
 }
 
 @end
