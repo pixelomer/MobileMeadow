@@ -2,7 +2,11 @@
 
 @implementation MMAssets
 
+#if TARGET_OS_SIMULATOR
+static NSString * const assetsPath = @"/opt/simject/MobileMeadow/Assets";
+#else
 static NSString * const assetsPath = @"/Library/MobileMeadow/Assets";
+#endif
 static NSMutableDictionary<NSString *, UIImage *> *cachedImages;
 static NSMutableDictionary<NSString *, NSNumber *> *imageCountsForPrefixes;
 

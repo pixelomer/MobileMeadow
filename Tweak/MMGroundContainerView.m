@@ -38,6 +38,7 @@ static MMGroundContainerView *_springboardSingleton;
 		_lastUpdateX = 1.0;
 		_imageViews = [NSMutableArray new];
 		if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.springboard"]) {
+			_lastUpdateX = 20.0;
 			if (_springboardSingleton) {
 				[NSException
 					raise:NSInvalidArgumentException
@@ -224,8 +225,18 @@ static MMGroundContainerView *_springboardSingleton;
 }
 
 - (void)updatePlants {
+	CGFloat offset = 0.0;
+	if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.springboard"]) {
+		offset += 20.0;
+	}
 	while ([self pointInside:CGPointMake(_lastUpdateX, 1) withEvent:nil]) {
+		if (![self pointInside:CGPointMake(_lastUpdateX+offset, 1) withEvent:nil]) {
+			break;
+		}
 		UIImage *image = [MMAssets randomImageWithPrefix:@"plant"];
+		if (![self pointInside:CGPointMake(_lastUpdateX+image.size.width, 1) withEvent:nil]) {
+			break;
+		}
 		UIImageView *imageView = [UIImageView new];
 		[_imageViews addObject:imageView];
 		imageView.image = image;
@@ -298,6 +309,12 @@ static MMGroundContainerView *_springboardSingleton;
 		};
 		objc_setAssociatedObject(imageView, @selector(animationBlock), (id)animate, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 		animate(YES);
+	}
+	for (NSInteger i=_imageViews.count-1; i>=0; i--) {
+		if ((_imageViews[i].frame.origin.x+offset) > self.frame.size.width) {
+			[_imageViews[i] removeFromSuperview];
+			[_imageViews removeObjectAtIndex:i];
+		}
 	}
 }
 
