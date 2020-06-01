@@ -14,7 +14,7 @@
 		message:@"Sending your letter..."
 		preferredStyle:UIAlertControllerStyleAlert
 	];
-	void(^showCompletionMessage)(NSString *, NSString *, BOOL) = ^(NSString *title, NSString *errorMessage, BOOL dismiss){
+	void(^showCompletionMessage)(NSString *, NSString *, NSNumber *) = ^(NSString *title, NSString *errorMessage, NSNumber *letterID){
 		[alert dismissViewControllerAnimated:YES completion:^{
 			alert = [UIAlertController
 				alertControllerWithTitle:title
@@ -25,7 +25,7 @@
 				actionWithTitle:@"Dismiss"
 				style:UIAlertActionStyleCancel
 				handler:^(id action){
-					if (dismiss) {
+					if (letterID) {
 						NSString *message = [_messageTextView.text copy];
 						NSString *title = [_titleTextField.text copy];
 						[MMUserDefaults acquireLockWithCompletion:^{
@@ -38,6 +38,11 @@
 									@"sent":@YES,
 									@"starred":@NO
 								};
+								if ([letterID isKindOfClass:[NSNumber class]]) {
+									NSMutableDictionary *mutableCopy = newDict.mutableCopy;
+									mutableCopy[@"id"] = letterID;
+									newDict = mutableCopy.copy;
+								}
 								if (!mailArray) mailArray = @[newDict];
 								else mailArray = [mailArray arrayByAddingObject:newDict];
 								[MMUserDefaults setObject:mailArray forKey:@"mails" completion:^{
@@ -61,7 +66,7 @@
 		NSError *error = nil;
 		NSData *HTTPBody = [NSJSONSerialization dataWithJSONObject:JSON options:0 error:&error];
 		if (!HTTPBody) {
-			showCompletionMessage(@"Error", error.description, NO);
+			showCompletionMessage(@"Error", error.description, nil);
 			return;
 		}
 		NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
@@ -71,19 +76,19 @@
 			NSHTTPURLResponse *HTTPResponse = (id)response;
 			NSError *error = nil;
 			if (HTTPError || data.length < 0 || HTTPResponse.statusCode != 200) {
-				showCompletionMessage(@"Error", error.description ?: @"The request failed.", NO);
+				showCompletionMessage(@"Error", error.description ?: @"The request failed.", nil);
 				return;
 			}
 			NSDictionary *JSONObject = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
 			if (!JSONObject || error) {
-				showCompletionMessage(@"Error", error.description ?: @"Could not parse the result.", NO);
+				showCompletionMessage(@"Error", error.description ?: @"Could not parse the result.", nil);
 				return;
 			}
 			else if (![JSONObject[@"success"] boolValue]) {
-				showCompletionMessage(@"Error", JSONObject[@"error"] ?: @"An unknown error occurred.", NO);
+				showCompletionMessage(@"Error", JSONObject[@"error"] ?: @"An unknown error occurred.", nil);
 				return;
 			}
-			showCompletionMessage(@"Success", @"Your letter has been successfully sent. Assuming that it doesn't contain anything inappropriate, a stranger will receive your letter soon.", YES);
+			showCompletionMessage(@"Success", @"Your letter has been successfully sent. Assuming that it doesn't contain anything inappropriate, a stranger will receive your letter soon.", JSONObject[@"id"] ?: [NSNull null]);
 		}];
 	}];
 }
