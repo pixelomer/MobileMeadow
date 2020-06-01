@@ -1,3 +1,8 @@
+MEADOW_USE_SIMULATOR ?= 0
+MEADOW_TESTER_BUILD ?= 0
+ifneq ($(MEADOW_TESTER_BUILD),0)
+MEADOW_TESTER_BUILD = 1
+endif
 ifneq ($(MEADOW_USE_SIMULATOR),0)
 MEADOW_USE_SIMULATOR = 1
 TARGET = simulator:clang::7.0
@@ -7,8 +12,8 @@ MEADOW_USE_SIMULATOR = 0
 TARGET = iphone:13.0:8.0
 ARCHS = armv7 arm64 arm64e
 endif
-CFLAGS += -I.. -include macros.h #-Wno-deprecated-declarations
-export CFLAGS TARGET ARCHS MEADOW_USE_SIMULATOR
+export CFLAGS TARGET ARCHS MEADOW_USE_SIMULATOR MEADOW_TESTER_BUILD
+CFLAGS += -I.. -DMEADOW_TESTER_BUILD=$(MEADOW_TESTER_BUILD) -include macros.h #-Wno-deprecated-declarations
 include $(THEOS)/makefiles/common.mk
 SUBPROJECTS += Tweak
 ifeq ($(MEADOW_USE_SIMULATOR),0)

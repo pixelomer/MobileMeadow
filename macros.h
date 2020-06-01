@@ -4,7 +4,7 @@
 #define min(x,y) ((x>y)?y:x)
 #define max(x,y) ((x>y)?x:y)
 #define DEG_TO_RAD(degress) ((degress) * M_PI / 180.0)
-#if DEBUG
+#if DEBUG || MEADOW_TESTER_BUILD
 #define NSLog(args...) NSLog(@"[MobileMeadow] "args)
 #else
 #define NSLog(args...)
@@ -14,7 +14,6 @@
 #else
 #define __debug_unused
 #endif
-#define kNewMailNotification CFSTR("com.pixelomer.mobilemeadow/ReceivedMail")
 
 @interface NSUserDefaults(Private)
 - (id)objectForKey:(NSString *)key inDomain:(NSString *)reverseDomain;
