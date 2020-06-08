@@ -1,7 +1,7 @@
 Package: com.pixelomer.mobilemeadow
 Name: MobileMeadow
-Depends: mobilesubstrate
-Version: 0.0.1
+Depends: mobilesubstrate, firmware (>=10.0)
+Version: 0.9
 Architecture: iphoneos-arm
 Description: Turn your phone into a meadow
   Turn your phone into a meadow.
@@ -11,7 +11,8 @@ Description: Turn your phone into a meadow
   Send others your own letters.
   Welcome to MobileMeadow.
   .
-  Requires iOS 13.0 or later. This version only supports devices with a rectangle dock.
+  Requires iOS 10.0 or later.
+  NOTE: This tweak may be somewhat unstable on iOS 10.
 Maintainer: PixelOmer
 Author: PixelOmer
 Section: Tweaks

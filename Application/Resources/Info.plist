@@ -54,6 +54,8 @@
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
+	<key>UILaunchStoryboardName</key>
+	<string>Launch Screen</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleSupportedPlatforms</key>

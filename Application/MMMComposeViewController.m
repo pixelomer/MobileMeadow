@@ -251,6 +251,7 @@
 		[_messageTextView setValue:@YES forKey:@"meadow_verticalOnly"];
 		_messageTextView.alwaysBounceVertical = YES;
 		_messageTextView.text = @"Hello, stranger! ...";
+		_messageTextView.textColor = [UIColor blackColor];
 		self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]
 			initWithTitle:@"Send"
 			style:UIBarButtonItemStyleDone

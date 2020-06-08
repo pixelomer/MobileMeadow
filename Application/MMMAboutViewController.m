@@ -13,7 +13,8 @@ static NSArray *_aboutContent;
 				@[@"@Skittyblock (Tester)", [NSURL URLWithString:@"https://twitter.com/Skittyblock"]],
 				@[@"@SamNChiet (Assets and Idea)", [NSURL URLWithString:@"https://twitter.com/SamNChiet"]],
 				@[@"Google (Star Icon)", [NSURL URLWithString:@"https://material.io"]],
-				@[@"OpenDyslexic (Letter Font)", [NSURL URLWithString:@"https://opendyslexic.org"]]
+				@[@"OpenDyslexic (Letter Font)", [NSURL URLWithString:@"https://opendyslexic.org"]],
+				@[@"@ConorTheDev (Tester)", [NSURL URLWithString:@"https://twitter.com/ConorTheDev"]]
 			]],
 			@[@"Additional Links", @"If you downloaded MobileMeadow from a source other than the official source, please switch to the official source.", @[
 				@[@"Official Source", [NSURL URLWithString:@"https://repo.pixelomer.com"]],

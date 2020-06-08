@@ -13,7 +13,7 @@ TARGET = iphone:13.0:8.0
 ARCHS = armv7 arm64 arm64e
 endif
 export CFLAGS TARGET ARCHS MEADOW_USE_SIMULATOR MEADOW_TESTER_BUILD
-CFLAGS += -I.. -DMEADOW_TESTER_BUILD=$(MEADOW_TESTER_BUILD) -include macros.h #-Wno-deprecated-declarations
+CFLAGS += -I.. -DMEADOW_TESTER_BUILD=$(MEADOW_TESTER_BUILD) -include macros.h
 include $(THEOS)/makefiles/common.mk
 SUBPROJECTS += Tweak
 ifeq ($(MEADOW_USE_SIMULATOR),0)
