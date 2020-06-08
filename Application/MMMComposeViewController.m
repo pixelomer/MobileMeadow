@@ -75,8 +75,8 @@
 		[NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *HTTPError) {
 			NSHTTPURLResponse *HTTPResponse = (id)response;
 			NSError *error = nil;
-			if (HTTPError || data.length < 0 || HTTPResponse.statusCode != 200) {
-				showCompletionMessage(@"Error", error.description ?: @"The request failed.", nil);
+			if (HTTPError || data.length <= 0) {
+				showCompletionMessage(@"Error", HTTPError.description ?: @"The request failed.", nil);
 				return;
 			}
 			NSDictionary *JSONObject = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
@@ -84,7 +84,7 @@
 				showCompletionMessage(@"Error", error.description ?: @"Could not parse the result.", nil);
 				return;
 			}
-			else if (![JSONObject[@"success"] boolValue]) {
+			else if (![JSONObject[@"success"] boolValue] || HTTPResponse.statusCode != 200) {
 				showCompletionMessage(@"Error", JSONObject[@"error"] ?: @"An unknown error occurred.", nil);
 				return;
 			}
