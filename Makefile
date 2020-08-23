@@ -29,6 +29,8 @@ SUBPROJECTS += Tweak
 ifeq ($(MEADOW_USE_SIMULATOR),0)
 ifneq ($(ENABLE_MAIL_FUNCTIONALITY),0)
 SUBPROJECTS += Application
+else
+SUBPROJECTS += Preferences
 endif
 endif
 include $(THEOS_MAKE_PATH)/aggregate.mk
