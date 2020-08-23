@@ -1,3 +1,4 @@
+#if ENABLE_MAIL_FUNCTIONALITY
 #import "MMMailBoxView.h"
 #import "MMAssets.h"
 #import "MMGroundContainerView.h"
@@ -177,3 +178,4 @@ static BOOL _isFull;
 }
 
 @end
+#endif

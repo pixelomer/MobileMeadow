@@ -1,3 +1,4 @@
+#if ENABLE_MAIL_FUNCTIONALITY
 #import <Foundation/Foundation.h>
 
 @interface MMUserDefaults : NSObject
@@ -36,3 +37,4 @@
 + (void)checkIfServerIsAliveWithCompletion:(void(^)(BOOL))completion;
 
 @end
+#endif

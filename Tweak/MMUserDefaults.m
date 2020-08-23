@@ -1,3 +1,4 @@
+#if ENABLE_MAIL_FUNCTIONALITY
 #import "MMUserDefaults.h"
 #import "MMUserDefaultsServer.h"
 
@@ -330,3 +331,4 @@ static NSMutableArray *_oldCheckBlocks;
 }}
 
 @end
+#endif

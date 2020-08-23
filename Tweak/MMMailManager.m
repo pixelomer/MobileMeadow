@@ -1,3 +1,4 @@
+#if ENABLE_MAIL_FUNCTIONALITY
 #import "MMMailManager.h"
 #import "MMAirLayerWindow.h"
 #import "MMGroundContainerView.h"
@@ -169,3 +170,4 @@ static BOOL isReceivingMail = NO;
 }
 
 @end
+#endif

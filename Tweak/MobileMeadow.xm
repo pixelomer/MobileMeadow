@@ -34,6 +34,33 @@ static MMGroundContainerView *_dockGround;
 @interface _WGWidgetListScrollView : UIScrollView
 @end
 
+%group SpringBoardMail
+
+#if ENABLE_MAIL_FUNCTIONALITY
+
+// iOS 7.0 -> Present
+%hook SBDockView
+
+- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event {
+	if (%orig) return YES;
+	if (!_dockGround.mailBoxView.userInteractionEnabled) return NO;
+	CGPoint converted = [self convertPoint:point toView:_dockGround.mailBoxView];
+	return [_dockGround.mailBoxView pointInside:converted withEvent:event];
+}
+
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+	UIView *view;
+	if ((view = %orig)) return view;
+	CGPoint converted = [self convertPoint:point toView:_dockGround.mailBoxView];
+	return [_dockGround.mailBoxView hitTest:converted withEvent:event];
+}
+
+%end
+
+#endif
+
+%end
+
 %group SpringBoard
 %hook _WGWidgetListScrollView
 
@@ -56,26 +83,9 @@ static MMGroundContainerView *_dockGround;
 	self.meadow_airLayer = [MMAirLayerWindow new];
 	self.meadow_airLayer.windowLevel = CGFLOAT_MAX / 2.0;
 	[self.meadow_airLayer makeKeyAndVisible];
+	#if ENABLE_MAIL_FUNCTIONALITY
 	[MMMailManager startMailThread];
-}
-
-%end
-
-// iOS 7.0 -> Present
-%hook SBDockView
-
-- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event {
-	if (%orig) return YES;
-	if (!_dockGround.mailBoxView.userInteractionEnabled) return NO;
-	CGPoint converted = [self convertPoint:point toView:_dockGround.mailBoxView];
-	return [_dockGround.mailBoxView pointInside:converted withEvent:event];
-}
-
-- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
-	UIView *view;
-	if ((view = %orig)) return view;
-	CGPoint converted = [self convertPoint:point toView:_dockGround.mailBoxView];
-	return [_dockGround.mailBoxView hitTest:converted withEvent:event];
+	#endif
 }
 
 %end
@@ -180,7 +190,10 @@ static MMGroundContainerView *_dockGround;
 
 %ctor {
 	if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.springboard"]) {
+		#if ENABLE_MAIL_FUNCTIONALITY
 		[MMUserDefaultsServer runServerInMainThread];
+		%init(SpringBoardMail);
+		#endif
 		%init(SpringBoard);
 	}
 	else {

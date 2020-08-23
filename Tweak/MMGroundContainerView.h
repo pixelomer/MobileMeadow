@@ -8,11 +8,15 @@
 
 @interface MMGroundContainerView : UIView {
 	CGFloat _lastUpdateX;
-	MMBirdView *_birdView;
 	NSMutableArray<UIImageView *> *_imageViews;
+#if ENABLE_MAIL_FUNCTIONALITY
+	MMBirdView *_birdView;
+#endif
 }
+#if ENABLE_MAIL_FUNCTIONALITY
 @property (nonatomic, strong, readonly) MMMailBoxView *mailBoxView;
-+ (MMGroundContainerView *)springboardSingleton;
 - (void)animateDeliveryBirdLandingWithCompletion:(void(^)(BOOL finished))completion;
 - (void)animateDeliveryBirdLeavingWithCompletion:(void(^)(BOOL finished))completion;
+#endif
++ (MMGroundContainerView *)springboardSingleton;
 @end

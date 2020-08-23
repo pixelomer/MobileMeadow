@@ -1,3 +1,4 @@
+#if ENABLE_MAIL_FUNCTIONALITY
 #import <UIKit/UIKit.h>
 #import "MMBirdView.h"
 
@@ -9,3 +10,4 @@
 + (BOOL)isFull;
 + (void)setIsFull:(BOOL)isFull;
 @end
+#endif

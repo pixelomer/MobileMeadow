@@ -46,6 +46,7 @@ static MMGroundContainerView *_springboardSingleton;
 				];
 			}
 			_springboardSingleton = self;
+			#if ENABLE_MAIL_FUNCTIONALITY
 			_mailBoxView = [MMMailBoxView new];
 			_mailBoxView.translatesAutoresizingMaskIntoConstraints = NO;
 			[self addSubview:_mailBoxView];
@@ -69,6 +70,7 @@ static MMGroundContainerView *_springboardSingleton;
 					constant:0.0
 				]
 			]];
+			#endif
 		}
 		[NSNotificationCenter.defaultCenter
 			addObserver:self
@@ -91,6 +93,8 @@ static MMGroundContainerView *_springboardSingleton;
 	}
 	return self;
 }
+
+#if ENABLE_MAIL_FUNCTIONALITY
 
 - (void)animateDeliveryBirdLeavingWithCompletion:(void(^)(BOOL finished))completion {
 	[MMMailBoxView setIsFull:NO];
@@ -223,6 +227,8 @@ static MMGroundContainerView *_springboardSingleton;
 		}
 	];
 }
+
+#endif
 
 - (void)updatePlants {
 	CGFloat offset = 0.0;
@@ -376,6 +382,7 @@ static MMGroundContainerView *_springboardSingleton;
 	]];
 	[self updatePlants];
 }
+
 
 - (void)dealloc {
 	[NSNotificationCenter.defaultCenter removeObserver:self];

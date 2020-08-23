@@ -1,3 +1,4 @@
+#if ENABLE_MAIL_FUNCTIONALITY
 #import "MMUserDefaultsServer.h"
 #import <objc/runtime.h>
 #import "MMUserDefaults.h"
@@ -214,3 +215,4 @@ static NSDictionary<NSString *, NSString *> *_selectorDictionary;
 }
 
 @end
+#endif
