@@ -10,9 +10,16 @@ TARGET = simulator:clang::7.0
 ARCHS = x86_64
 else
 MEADOW_USE_SIMULATOR = 0
+ifeq ($(THEOS_PACKAGE_SCHEME),rootless)
+TARGET = iphone:15.6:15.0
+ARCHS = arm64 arm64e
+else
 TARGET = iphone:13.3:8.0
 ARCHS = armv7 arm64 arm64e
 endif
+endif
+export TARGET
+export ARCHS
 CFLAGS += -I.. -DMEADOW_TESTER_BUILD=$(MEADOW_TESTER_BUILD) -include macros.h -DENABLE_MAIL_FUNCTIONALITY=$(ENABLE_MAIL_FUNCTIONALITY) -Wno-unused-function -Wno-unused-variable
 export CFLAGS TARGET ARCHS MEADOW_USE_SIMULATOR MEADOW_TESTER_BUILD
 include $(THEOS)/makefiles/common.mk

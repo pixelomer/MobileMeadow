@@ -46,7 +46,10 @@
 
 - (void)handleButtonPress:(PSSpecifier *)specifier {
 	NSURL *URL = [NSURL URLWithString:[specifier propertyForKey:@"meadowURL"]];
-	[UIApplication.sharedApplication openURL:URL];
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+	[[UIApplication sharedApplication] openURL:URL];
+#pragma GCC diagnostic pop
 }
 
 @end

@@ -1,14 +1,18 @@
 #import "MMAssets.h"
+#import <libroot.h>
 
 @implementation MMAssets
 
-#if TARGET_OS_SIMULATOR
-static NSString * const assetsPath = @"/opt/simject/MobileMeadow/Assets";
-#else
-static NSString * const assetsPath = @"/Library/MobileMeadow/Assets";
-#endif
 static NSMutableDictionary<NSString *, UIImage *> *cachedImages;
 static NSMutableDictionary<NSString *, NSNumber *> *imageCountsForPrefixes;
+
++ (NSString *)assetsPath {
+#if TARGET_OS_SIMULATOR
+	return @"/opt/simject/MobileMeadow/Assets";
+#else
+	return JBROOT_PATH_NSSTRING(@"/Library/MobileMeadow/Assets");
+#endif
+}
 
 + (void)load {
 	if (self == [MMAssets class]) {
@@ -35,7 +39,7 @@ static NSMutableDictionary<NSString *, NSNumber *> *imageCountsForPrefixes;
 
 + (UIImage *)imageNamed:(NSString *)name {
 	if (cachedImages[name]) return cachedImages[name];
-	UIImage *image = [UIImage imageWithContentsOfFile:[NSString stringWithFormat:@"%@/%@.png", assetsPath, name]];
+	UIImage *image = [UIImage imageWithContentsOfFile:[NSString stringWithFormat:@"%@/%@.png", [self assetsPath], name]];
 	if (!image) return nil;
 	return cachedImages[name] = image;
 }
@@ -47,7 +51,7 @@ static NSMutableDictionary<NSString *, NSNumber *> *imageCountsForPrefixes;
 		BOOL isDir;
 		NSString *path;
 		do {
-			path = [NSString stringWithFormat:@"%@/%@_%lu.png", assetsPath, prefix, (unsigned long)imageCountRaw];
+			path = [NSString stringWithFormat:@"%@/%@_%lu.png", [self assetsPath], prefix, (unsigned long)imageCountRaw];
 			imageCountRaw++;
 		}
 		while ([NSFileManager.defaultManager fileExistsAtPath:path isDirectory:&isDir] && !isDir);

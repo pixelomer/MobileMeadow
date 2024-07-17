@@ -22,6 +22,7 @@ static MMGroundContainerView *_dockGround;
 
 @interface SpringBoard : UIApplication
 @property (nonatomic, strong) MMAirLayerWindow *meadow_airLayer;
+- (NSSet<UIWindowScene *> *)connectedScenes;
 @end
 
 @interface UIView(Private)
@@ -81,6 +82,15 @@ static MMGroundContainerView *_dockGround;
 - (void)applicationDidFinishLaunching:(SpringBoard *)springboard {
 	%orig;
 	self.meadow_airLayer = [MMAirLayerWindow new];
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+	if (@available(iOS 13.0, *)) {
+		self.meadow_airLayer.windowScene = (id)[self connectedScenes].allObjects[0];
+	}
+	else {
+		self.meadow_airLayer.screen = [UIScreen mainScreen];
+	}
+#pragma GCC diagnostic pop
 	self.meadow_airLayer.windowLevel = CGFLOAT_MAX / 2.0;
 	[self.meadow_airLayer makeKeyAndVisible];
 	#if ENABLE_MAIL_FUNCTIONALITY
@@ -189,12 +199,17 @@ static MMGroundContainerView *_dockGround;
 %end
 
 %ctor {
-	if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.springboard"]) {
+	NSString *bundleID = NSBundle.mainBundle.bundleIdentifier;
+	if ([bundleID isEqualToString:@"com.apple.springboard"]) {
 		#if ENABLE_MAIL_FUNCTIONALITY
 		[MMUserDefaultsServer runServerInMainThread];
 		%init(SpringBoardMail);
 		#endif
 		%init(SpringBoard);
+	}
+	else if ([bundleID isEqualToString:@"org.coolstar.SileoStore"]) {
+		//FIXME: The tweak makes Sileo freeze. As a workaround, the tweak is
+		//       disabled in Sileo.
 	}
 	else {
 		%init(App);
