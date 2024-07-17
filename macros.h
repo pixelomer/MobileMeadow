@@ -5,7 +5,7 @@
 #define max(x,y) ((x>y)?x:y)
 #define DEG_TO_RAD(degress) ((degress) * M_PI / 180.0)
 #if DEBUG || MEADOW_TESTER_BUILD
-#define NSLog(args...) NSLog(@"[MobileMeadow] "args)
+#define NSLog(args...) NSLog(@"[MobileMeadow] " args)
 #else
 #define NSLog(args...)
 #endif
@@ -44,7 +44,7 @@ typedef enum NSNotificationSuspensionBehavior : NSUInteger {
 		@[@"@TheOnlyKef (MeadowMail Moderator)", @"https://twitter.com/TheOnlyKef"], \
 		@[@"@Skittyblock (Tester)", @"https://twitter.com/Skittyblock"], \
 		@[@"@ConorTheDev (Tester)", @"https://twitter.com/ConorTheDev"], \
-		@[@"@SamNChiet (Assets and Idea)", @"https://twitter.com/SamNChiet"], \
+		@[@"@SamNChiet (Assets and Original Concept)", @"https://twitter.com/SamNChiet"], \
 		@[@"OpenDyslexic (Letter Font)", @"https://opendyslexic.org"], \
 		@[@"Google (Star Icon)", @"https://material.io"] \
 	]], \
