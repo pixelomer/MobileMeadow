@@ -1,6 +1,6 @@
 Package: com.pixelomer.mobilemeadow
 Name: MobileMeadow
-Depends: mobilesubstrate, firmware (>=10.0)
+Depends: mobilesubstrate, firmware (>=10.0), preferenceloader (>=2.2.7)
 Version: 1.0
 Architecture: iphoneos-arm
 Description: Turn your phone into a meadow
